@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Bell, QrCode, Settings, LogOut, Copy, Wallet } from 'lucide-react';
 import { useState } from 'react';
+import Image from 'next/image';
 import { useWallet } from '@/hooks/useWallet';
 import { cn } from '@/lib/utils';
 
@@ -36,7 +37,15 @@ export function Navbar() {
     >
       {/* Logo */}
       <div className="flex items-center gap-10">
-        <Link href="/" className="flex items-center">
+        <Link href="/" className="flex items-center gap-2.5">
+          <Image
+            src="/flowpay-logo.png"
+            alt="FlowPay logo"
+            width={44}
+            height={44}
+            className="object-contain"
+            style={{ filter: 'drop-shadow(0 0 14px rgba(124,110,255,0.8)) drop-shadow(0 0 4px rgba(169,155,255,0.6))' }}
+          />
           <span
             className="font-black text-xl"
             style={{

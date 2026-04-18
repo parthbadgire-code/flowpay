@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowRight, Zap, Shield, QrCode, BarChart3 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { useWallet } from '@/hooks/useWallet';
+import { CryptoPriceCard } from '@/components/ui/CryptoPriceCard';
 
 const FEATURES = [
   {
@@ -171,6 +172,9 @@ export default function LandingPage() {
                 <p className="text-[10px] text-slate-400">₹481 converted by FlowAI</p>
               </div>
             </motion.div>
+
+            {/* Live Crypto Prices container */}
+            <CryptoPriceCard />
           </motion.div>
         </div>
       </section>
