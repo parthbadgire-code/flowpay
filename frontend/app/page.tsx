@@ -3,62 +3,51 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Wallet, QrCode, BarChart3, Shield, Zap, ChevronDown } from 'lucide-react';
+import { ArrowRight, Zap, Shield, QrCode, BarChart3 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
-import { Button, Card, Badge } from '@/components/ui';
 import { useWallet } from '@/hooks/useWallet';
-import { formatINR } from '@/lib/utils';
 
 const FEATURES = [
   {
-    icon: <BarChart3 className="w-6 h-6" />,
-    title: 'Unified INR Balance',
-    desc: 'See all your crypto assets as one spendable ₹ balance. No more juggling wallets.',
-    color: 'text-primary-400',
-    bg: 'bg-primary-600/10',
-    border: 'border-primary-500/20',
+    icon: <Zap className="w-5 h-5" />,
+    title: 'Gasless by Default',
+    desc: 'Never worry about native gas tokens again. We sponsor or abstract gas fees across all supported chains.',
+    color: '#A99BFF',
+    bg: 'rgba(124,110,255,0.1)',
   },
   {
-    icon: <Zap className="w-6 h-6" />,
-    title: 'Smart Asset Routing',
-    desc: 'Our algorithm picks the best combination of your assets for each deposit. Stablecoins first.',
-    color: 'text-accent-400',
-    bg: 'bg-accent-500/10',
-    border: 'border-accent-500/20',
+    icon: <BarChart3 className="w-5 h-5" />,
+    title: 'Instant INR',
+    desc: 'Convert crypto to fiat instantly for real-world merchant payments.',
+    color: '#A99BFF',
+    bg: 'rgba(124,110,255,0.1)',
   },
   {
-    icon: <QrCode className="w-6 h-6" />,
-    title: 'QR Payments',
-    desc: 'Scan any UPI QR code and pay with your FlowPay balance. Feels just like PhonePe.',
-    color: 'text-emerald-400',
-    bg: 'bg-emerald-500/10',
-    border: 'border-emerald-500/20',
+    icon: <Shield className="w-5 h-5" />,
+    title: 'NFT Liquidity',
+    desc: 'Borrow against blue-chip NFTs instantly to fund your transactions without selling.',
+    color: '#A99BFF',
+    bg: 'rgba(124,110,255,0.1)',
   },
   {
-    icon: <Shield className="w-6 h-6" />,
-    title: 'NFT Backup Liquidity',
-    desc: 'Use your NFT floor value as backup spending power. Approval-based and secure.',
-    color: 'text-amber-400',
-    bg: 'bg-amber-500/10',
-    border: 'border-amber-500/20',
+    icon: <QrCode className="w-5 h-5" />,
+    title: 'Cross-Chain Routing',
+    desc: 'Our algorithm automatically bridges and swaps assets behind the scenes to fulfil your payment requires.',
+    color: '#A99BFF',
+    bg: 'rgba(124,110,255,0.1)',
   },
 ];
 
-const DEMO_TOKENS = [
-  { symbol: 'USDC', amount: '₹200', logo: '💵', color: '#2775CA' },
-  { symbol: 'MATIC', amount: '₹150', logo: '🔷', color: '#8247E5' },
-  { symbol: 'ETH', amount: '₹100', logo: '⟠', color: '#627EEA' },
-];
-
-const STEPS = [
-  { n: '01', title: 'Connect Wallet', desc: 'Link your Polygon wallet. We detect your USDC, MATIC, ETH & NFT balances automatically.' },
-  { n: '02', title: 'Deposit to FlowPay', desc: 'Choose an INR amount. Our router selects the best asset combination so you never need to swap manually.' },
-  { n: '03', title: 'Spend with QR', desc: 'Pay any merchant instantly using your unified FlowPay balance. Enter the reward pool with every payment.' },
-];
+const cardGlass = {
+  background: 'rgba(18, 16, 34, 0.8)',
+  border: '1px solid rgba(124,110,255,0.15)',
+  borderRadius: '1rem',
+  backdropFilter: 'blur(20px)',
+};
 
 export default function LandingPage() {
   const router = useRouter();
-  const { tryDemo, isConnected } = useWallet();
+  const { tryDemo } = useWallet();
 
   const handleDemo = async () => {
     await tryDemo();
@@ -66,221 +55,222 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0F] overflow-x-hidden">
+    <div className="min-h-screen overflow-x-hidden" style={{ background: '#0D0D14' }}>
       <Navbar />
 
-      {/* ─── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative min-h-screen flex items-center justify-center px-4 pt-20">
-        {/* Background glows */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary-600/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-1/3 right-0 w-[300px] h-[300px] bg-accent-500/8 rounded-full blur-3xl pointer-events-none" />
+      {/* ── Hero ── */}
+      <section className="relative min-h-screen flex items-center px-6 lg:px-16 pt-16">
+        {/* background glows */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div style={{ position: 'absolute', top: '15%', left: '10%', width: '500px', height: '500px', background: 'radial-gradient(ellipse, rgba(107,92,231,0.1) 0%, transparent 70%)' }} />
+          <div style={{ position: 'absolute', bottom: '10%', right: '5%', width: '300px', height: '300px', background: 'radial-gradient(ellipse, rgba(124,110,255,0.07) 0%, transparent 70%)' }} />
+        </div>
 
-        <div className="relative text-center max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <Badge variant="purple" size="md" className="mb-6 mx-auto">
-              <span className="w-2 h-2 bg-primary-400 rounded-full animate-pulse" />
-              Built on Polygon Amoy · Hackathon 2026
-            </Badge>
-          </motion.div>
-
-          <motion.h1
-            className="text-5xl sm:text-7xl font-black leading-none tracking-tight mb-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.1 }}
-          >
-            Turning fragmented
-            <br />
-            <span className="gradient-text">crypto into</span>
-            <br />
-            usable money.
-          </motion.h1>
-
-          <motion.p
-            className="text-xl text-slate-400 mb-10 max-w-xl mx-auto leading-relaxed"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            Wallets show what you own.{' '}
-            <strong className="text-white">We show what you can spend.</strong>
-          </motion.p>
-
-          <motion.div
-            className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <Button
-              variant="brand"
-              size="lg"
-              icon={<Wallet className="w-5 h-5" />}
-              onClick={handleDemo}
-              id="hero-connect-wallet"
+        <div className="relative max-w-7xl mx-auto w-full grid lg:grid-cols-2 gap-12 items-center">
+          {/* Left: Text */}
+          <div>
+            <motion.h1
+              className="text-5xl sm:text-6xl lg:text-7xl font-black leading-[1.05] tracking-tight text-white mb-5"
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
             >
-              Connect Wallet
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              icon={<ArrowRight className="w-5 h-5" />}
-              onClick={handleDemo}
-              id="hero-try-demo"
-            >
-              Try Demo
-            </Button>
-          </motion.div>
+              Turning<br />
+              fragmented<br />
+              crypto into<br />
+              <span style={{ background: 'linear-gradient(135deg, #A99BFF 0%, #7C6EFF 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                usable money.
+              </span>
+            </motion.h1>
 
-          {/* Floating wallet cards */}
-          <div className="flex justify-center gap-3 flex-wrap">
-            {DEMO_TOKENS.map((token, i) => (
-              <motion.div
-                key={token.symbol}
-                className="glass rounded-2xl px-5 py-4 flex items-center gap-3"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: [0, 1, 1], y: [30, 0, -6, 0] }}
-                transition={{ delay: 0.5 + i * 0.15, duration: 1, repeat: Infinity, repeatDelay: 2 + i }}
-              >
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center text-xl border"
-                  style={{ background: `${token.color}20`, borderColor: `${token.color}40` }}
-                >
-                  {token.logo}
-                </div>
-                <div className="text-left">
-                  <p className="text-xs text-slate-500">{token.symbol}</p>
-                  <p className="font-bold text-white">{token.amount}</p>
-                </div>
-              </motion.div>
-            ))}
+            <motion.p
+              className="text-slate-400 text-base leading-relaxed mb-8 max-w-md"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.25, duration: 0.5 }}
+            >
+              Wallets show what you own. We show what you can spend. Experience frictionless liquidity across chains, tokens, and real-world assets.
+            </motion.p>
 
             <motion.div
-              className="glass-strong rounded-2xl px-5 py-4 flex items-center gap-3 border border-primary-500/30 glow-purple"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 1, duration: 0.5 }}
+              className="flex items-center gap-4"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
             >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-600 to-accent-500 flex items-center justify-center">
-                <span className="text-white font-black text-xs">FP</span>
-              </div>
-              <div className="text-left">
-                <p className="text-xs text-primary-400">FlowPay Balance</p>
-                <p className="font-black text-white gradient-text">₹450</p>
-              </div>
+              <Link href="/connect">
+                <button
+                  id="hero-login"
+                  className="px-6 py-3 text-sm font-bold text-white rounded-full transition-all"
+                  style={{
+                    background: 'linear-gradient(135deg, #A99BFF 0%, #7C6EFF 60%, #6B5CE7 100%)',
+                    boxShadow: '0 4px 20px rgba(124,110,255,0.4)',
+                  }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 6px 28px rgba(124,110,255,0.6)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(124,110,255,0.4)'; (e.currentTarget as HTMLElement).style.transform = 'none'; }}
+                >
+                  Login
+                </button>
+              </Link>
+              <button
+                onClick={handleDemo}
+                id="hero-try-demo"
+                className="px-6 py-3 text-sm font-semibold rounded-full transition-all"
+                style={{ background: 'transparent', border: '1px solid rgba(169,155,255,0.35)', color: '#A99BFF' }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(124,110,255,0.1)'; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+              >
+                Try Demo
+              </button>
             </motion.div>
           </div>
 
+          {/* Right: Floating stats card mockup */}
           <motion.div
-            className="mt-16 flex justify-center"
-            animate={{ y: [0, 8, 0] }}
-            transition={{ repeat: Infinity, duration: 2 }}
+            initial={{ opacity: 0, x: 24, y: 12 }}
+            animate={{ opacity: 1, x: 0, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.7 }}
+            className="hidden lg:flex flex-col items-end gap-4"
           >
-            <ChevronDown className="w-6 h-6 text-slate-600" />
+            {/* Main balance card */}
+            <div
+              className="w-full max-w-sm rounded-2xl p-5"
+              style={{ ...cardGlass, boxShadow: '0 8px 40px rgba(0,0,0,0.5)' }}
+            >
+              <p className="text-xs text-slate-500 uppercase tracking-widest mb-1">TOTAL USABLE LIQUIDITY</p>
+              <p className="text-4xl font-black text-white mb-4">$12,450.00</p>
+
+              <div className="space-y-2">
+                {[
+                  { symbol: 'USD Coin', color: '#2775CA', abbr: 'U', amount: '$4,200' },
+                  { symbol: 'Ethereum', color: '#627EEA', abbr: 'E', amount: '$8,250' },
+                ].map(t => (
+                  <div key={t.symbol} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black text-white flex-shrink-0" style={{ background: t.color }}>
+                      {t.abbr}
+                    </div>
+                    <span className="text-sm font-medium text-white flex-1">{t.symbol}</span>
+                    <span className="text-sm font-bold text-white">{t.amount}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Payment sent notification */}
+            <motion.div
+              animate={{ y: [0, -6, 0] }}
+              transition={{ repeat: Infinity, duration: 3.5, ease: 'easeInOut' }}
+              className="flex items-center gap-3 px-4 py-3 rounded-2xl"
+              style={{ ...cardGlass, background: 'rgba(16,185,129,0.12)', borderColor: 'rgba(16,185,129,0.3)' }}
+            >
+              <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.3)' }}>
+                <ArrowRight className="w-3.5 h-3.5 text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-white">Payment Sent</p>
+                <p className="text-[10px] text-slate-400">₹481 converted by FlowAI</p>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
       </section>
 
-      {/* ─── Problem Section ───────────────────────────────────────────────── */}
-      <section className="py-24 px-4 max-w-5xl mx-auto">
+      {/* ── Illusion of Wealth ── */}
+      <section className="py-24 px-6 lg:px-16 max-w-7xl mx-auto">
         <motion.div
-          className="text-center mb-16"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
+          className="text-center mb-14"
         >
-          <Badge variant="red" className="mb-4">The Problem</Badge>
-          <h2 className="text-4xl font-black text-white mb-4">Your money is trapped.</h2>
-          <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-            You have ₹200 in USDC, ₹150 in MATIC, and ₹100 in ETH — but every wallet says{' '}
-            <strong className="text-red-400">"Insufficient Balance"</strong> when you try to use any of it.
+          <h2 className="text-4xl font-black text-white mb-3">The Illusion of Wealth</h2>
+          <p className="text-slate-400 text-base max-w-2xl mx-auto">
+            Having assets isn&apos;t the same as having spending power. Traditional wallets trap your value in silos.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-4 mb-8">
-          {DEMO_TOKENS.map((token, i) => (
-            <motion.div
-              key={token.symbol}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-            >
-              <Card className="text-center py-6">
-                <div className="text-4xl mb-2">{token.logo}</div>
-                <p className="text-2xl font-black text-white">{token.amount}</p>
-                <p className="text-sm text-slate-500">{token.symbol} balance</p>
-                <p className="text-xs text-red-400 mt-2 bg-red-500/10 rounded-lg px-2 py-1">
-                  Cannot spend directly
-                </p>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-
-        <motion.div
-          className="flex justify-center"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-        >
-          <div className="glass-strong border border-primary-500/30 rounded-2xl p-6 text-center max-w-sm glow-purple">
-            <span className="text-3xl mb-2 block">⚡</span>
-            <p className="text-2xl font-black gradient-text mb-1">₹450</p>
-            <p className="text-sm text-slate-400">FlowPay Unified Balance</p>
-            <p className="text-xs text-emerald-400 mt-2">Ready to spend anywhere</p>
-          </div>
-        </motion.div>
-      </section>
-
-      {/* ─── How it Works ──────────────────────────────────────────────────── */}
-      <section className="py-24 px-4 max-w-5xl mx-auto">
-        <motion.div
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-        >
-          <Badge variant="blue" className="mb-4">How It Works</Badge>
-          <h2 className="text-4xl font-black text-white">Three steps to spendable crypto.</h2>
-        </motion.div>
-
-        <div className="space-y-6">
-          {STEPS.map((step, i) => (
-            <motion.div
-              key={step.n}
-              className="flex gap-6 items-start"
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.15 }}
-            >
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-600 to-accent-500 flex items-center justify-center flex-shrink-0 shadow-glow-sm">
-                <span className="text-white font-black text-sm">{step.n}</span>
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Old Way */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="rounded-2xl p-5"
+            style={cardGlass}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-red-400">✕</span>
+              <span className="text-sm font-bold text-white">The Old Way</span>
+            </div>
+            <div className="rounded-xl p-4 mb-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-sm text-white">Send ₹1,000</span>
+                <span className="text-xs text-slate-500">Polygon</span>
               </div>
-              <div className="pt-2">
-                <h3 className="text-xl font-bold text-white mb-2">{step.title}</h3>
-                <p className="text-slate-400 leading-relaxed">{step.desc}</p>
+              <div className="flex justify-between items-center py-2 border-b border-white/5">
+                <span className="text-xs text-slate-400">USDC</span>
+                <span className="text-xs text-slate-300">$10.00</span>
               </div>
-            </motion.div>
-          ))}
+            </div>
+            <div className="flex items-center gap-2 rounded-xl px-3 py-2.5" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)' }}>
+              <span className="text-red-400 text-xs">●</span>
+              <span className="text-xs text-red-400">Insufficient Balance</span>
+            </div>
+          </motion.div>
+
+          {/* FlowPay Routing */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="rounded-2xl p-5"
+            style={cardGlass}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <span style={{ color: '#A99BFF' }}>✦</span>
+              <span className="text-sm font-bold text-white">FlowPay Routing</span>
+              <span className="ml-auto text-xs rounded-full px-2 py-0.5 font-bold" style={{ background: 'rgba(16,185,129,0.15)', color: '#34d399', border: '1px solid rgba(16,185,129,0.3)' }}>AI Routing</span>
+            </div>
+            <div className="rounded-xl p-4 mb-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-sm text-white">Send ₹1,000</span>
+              </div>
+              <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-2">USES FROM ALL ASSETS</p>
+              <div className="flex justify-between items-center py-1.5">
+                <span className="text-xs text-slate-400">• USDC (Polygon)</span>
+                <span className="text-xs text-slate-300">$10.01</span>
+              </div>
+              <div className="flex justify-between items-center py-1.5">
+                <span className="text-xs text-slate-400">• MATIC (Polygon)</span>
+                <span className="text-xs text-slate-300">-$1.18</span>
+              </div>
+            </div>
+            <button
+              onClick={handleDemo}
+              className="w-full py-3 font-bold text-white text-sm rounded-full"
+              style={{ background: 'linear-gradient(135deg, #A99BFF 0%, #7C6EFF 100%)' }}
+            >
+              Swipe to Pay ✓
+            </button>
+          </motion.div>
         </div>
       </section>
 
-      {/* ─── Features Grid ─────────────────────────────────────────────────── */}
-      <section className="py-24 px-4 max-w-5xl mx-auto">
+      {/* ── Infrastructure ── */}
+      <section className="py-24 px-6 lg:px-16 max-w-7xl mx-auto">
         <motion.div
-          className="text-center mb-16"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
+          className="mb-14"
         >
-          <Badge variant="green" className="mb-4">Features</Badge>
-          <h2 className="text-4xl font-black text-white">Built for the future of spending.</h2>
+          <h2 className="text-5xl font-black text-white leading-tight">
+            Infrastructure for<br />
+            the{' '}
+            <span style={{ background: 'linear-gradient(135deg, #A99BFF 0%, #7C6EFF 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+              liquid era.
+            </span>
+          </h2>
         </motion.div>
 
         <div className="grid sm:grid-cols-2 gap-4">
@@ -291,65 +281,35 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
+              className="p-6 rounded-2xl group cursor-pointer transition-all"
+              style={cardGlass}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(124,110,255,0.3)'; (e.currentTarget as HTMLElement).style.background = 'rgba(22,20,42,0.9)'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(124,110,255,0.15)'; (e.currentTarget as HTMLElement).style.background = 'rgba(18, 16, 34, 0.8)'; }}
             >
-              <Card hover className="h-full">
-                <div className={`w-12 h-12 rounded-xl ${f.bg} ${f.color} border ${f.border} flex items-center justify-center mb-4`}>
-                  {f.icon}
-                </div>
-                <h3 className="text-lg font-bold text-white mb-2">{f.title}</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">{f.desc}</p>
-              </Card>
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+                style={{ background: f.bg, color: f.color }}
+              >
+                {f.icon}
+              </div>
+              <h3 className="text-base font-bold text-white mb-2">{f.title}</h3>
+              <p className="text-sm text-slate-400 leading-relaxed">{f.desc}</p>
             </motion.div>
           ))}
         </div>
       </section>
 
-      {/* ─── CTA ───────────────────────────────────────────────────────────── */}
-      <section className="py-24 px-4">
-        <motion.div
-          className="max-w-2xl mx-auto text-center"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-        >
-          <div className="glass-strong rounded-3xl p-12 border border-primary-500/20 glow-purple">
-            <span className="text-5xl mb-4 block">🚀</span>
-            <h2 className="text-4xl font-black text-white mb-4">
-              Ready to unify your crypto?
-            </h2>
-            <p className="text-slate-400 mb-8">
-              Join thousands of users turning fragmented assets into real spending power.
-            </p>
-            <Button
-              variant="brand"
-              size="lg"
-              icon={<ArrowRight className="w-5 h-5" />}
-              onClick={handleDemo}
-              id="cta-try-flowpay"
-            >
-              Start with FlowPay
-            </Button>
+      {/* ── Footer ── */}
+      <footer className="py-10 mt-8" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <p className="text-white font-black text-lg mb-3">FlowPay</p>
+          <div className="flex items-center justify-center gap-6 text-xs text-slate-500 mb-3">
+            <button className="hover:text-slate-300 transition-colors">Privacy</button>
+            <button className="hover:text-slate-300 transition-colors">Terms</button>
+            <button className="hover:text-slate-300 transition-colors">Docs</button>
+            <button className="hover:text-slate-300 transition-colors">Security</button>
           </div>
-        </motion.div>
-      </section>
-
-      {/* ─── Footer ────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-white/[0.06] px-4 py-8">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary-600 to-accent-500 flex items-center justify-center">
-              <span className="text-white font-black text-[10px]">FP</span>
-            </div>
-            <span className="font-bold text-white">FlowPay</span>
-          </div>
-          <p className="text-xs text-slate-600">
-            Built on Polygon Amoy · Hackathon 2026 · Simulation only — not financial advice
-          </p>
-          <div className="flex gap-4 text-xs text-slate-600">
-            <Link href="/dashboard" className="hover:text-slate-400 transition-colors">Dashboard</Link>
-            <Link href="/deposit" className="hover:text-slate-400 transition-colors">Deposit</Link>
-            <Link href="/payment" className="hover:text-slate-400 transition-colors">Pay</Link>
-          </div>
+          <p className="text-xs text-slate-600">© 2024 FlowPay Protocol. Liquid assets, unified.</p>
         </div>
       </footer>
     </div>

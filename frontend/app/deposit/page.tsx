@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { useWallet } from '@/hooks/useWallet';
 import { usePaymentRouting } from '@/hooks/usePaymentRouting';
 import { useFlowPay } from '@/lib/flowpayContext';
-import { Sidebar, BottomNav } from '@/components/layout/Navigation';
+import { Navbar } from '@/components/layout/Navbar';
 import { RouteBreakdown } from '@/components/deposit/RouteBreakdown';
 import { SuccessModal } from '@/components/shared/SuccessModal';
 import { Button, Card, Input, Badge, Label, Separator } from '@/components/ui';
@@ -63,9 +63,9 @@ export default function DepositPage() {
   const canConfirm = amountNum > 0 && amountNum <= totalAvailable && !!breakdown && !loading;
 
   return (
-    <div className="flex min-h-screen bg-[#0A0A0F]">
-      <Sidebar />
-      <main className="flex-1 lg:ml-64 pb-24 lg:pb-6 px-4 lg:px-8 pt-6">
+    <div className="flex min-h-screen bg-[#0A0A0F] pt-20">
+      <Navbar />
+      <main className="flex-1 w-full max-w-6xl mx-auto px-4 lg:px-8 py-10">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           <Link href="/dashboard">
@@ -177,8 +177,6 @@ export default function DepositPage() {
           </AnimatePresence>
         </div>
       </main>
-
-      <BottomNav />
 
       <SuccessModal
         isOpen={successOpen}

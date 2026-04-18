@@ -3,39 +3,44 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, AlertCircle, Wallet } from 'lucide-react';
+import { ArrowLeft, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useWallet } from '@/hooks/useWallet';
 import { useFlowPayBalance } from '@/hooks/useFlowPayBalance';
 import { useFlowPay } from '@/lib/flowpayContext';
 import { Merchant } from '@/types/payment';
-import { Sidebar, BottomNav } from '@/components/layout/Navigation';
-import { QRScanner } from '@/components/payment/QRScanner';
 import { SuccessModal } from '@/components/shared/SuccessModal';
-import { Button, Card, Input, Badge, Label, Separator } from '@/components/ui';
-import { formatINR } from '@/lib/utils';
-
-const PRESET_AMOUNTS = [50, 100, 200, 500];
 
 export default function PaymentPage() {
   const router = useRouter();
   const { isConnected, tryDemo } = useWallet();
-  const { flowPayBalance, canAfford } = useFlowPayBalance();
+  const { canAfford } = useFlowPayBalance();
   const { spend, addLotteryEntry } = useFlowPay();
 
   const [merchant, setMerchant] = useState<Merchant | null>(null);
-  const [amount, setAmount] = useState('');
   const [confirming, setConfirming] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [successData, setSuccessData] = useState<{ newBalance: number; txHash?: string } | null>(null);
+  const [torchOn, setTorchOn] = useState(false);
+
+  const amountNum = 40;
+  const affordable = canAfford(amountNum);
+  const canPay = merchant !== null && amountNum > 0 && affordable;
 
   useEffect(() => {
     if (!isConnected) { tryDemo(); }
+    setTimeout(() => {
+      setMerchant({
+        id: '1',
+        name: "Rahul's Chai Stall",
+        upiId: 'rahulchai@ybl',
+        category: 'Food & Beverage',
+        logo: '🏪',
+        color: '#7C6EFF',
+        walletAddress: '0xabc...',
+      });
+    }, 1800);
   }, [isConnected, tryDemo]);
-
-  const amountNum = parseFloat(amount) || 0;
-  const affordable = canAfford(amountNum);
-  const canPay = merchant !== null && amountNum > 0 && affordable;
 
   const handleConfirm = async () => {
     if (!merchant || !canPay) return;
@@ -51,147 +56,197 @@ export default function PaymentPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#0A0A0F]">
-      <Sidebar />
-      <main className="flex-1 lg:ml-64 pb-24 lg:pb-6 px-4 lg:px-8 pt-6">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
-          <Link href="/dashboard">
-            <button className="w-9 h-9 rounded-xl glass flex items-center justify-center text-slate-400 hover:text-white transition-colors">
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-black text-white">QR Payment</h1>
-            <p className="text-sm text-slate-500">Scan a merchant QR or select below</p>
+    <div
+      className="flex flex-col min-h-screen relative overflow-hidden"
+      style={{ background: '#080810' }}
+    >
+      {/* Subtle vignette overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse at 50% 40%, rgba(107,92,231,0.06) 0%, transparent 60%)',
+        }}
+      />
+
+      {/* ── Top Header ──────────────────────────────────────────────────────── */}
+      <div className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-5 pt-6 pb-4">
+        <Link href="/dashboard">
+          <button
+            className="w-10 h-10 rounded-full flex items-center justify-center text-white transition-all"
+            style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(12px)' }}
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+        </Link>
+
+        <span className="text-white font-semibold text-base tracking-wide">Scan QR</span>
+
+        <button
+          onClick={() => setTorchOn(t => !t)}
+          className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
+          style={{
+            background: torchOn ? 'rgba(169,155,255,0.3)' : 'rgba(255,255,255,0.07)',
+            border: `1px solid ${torchOn ? 'rgba(169,155,255,0.6)' : 'rgba(255,255,255,0.1)'}`,
+            backdropFilter: 'blur(12px)',
+          }}
+        >
+          {/* Torch / flashlight icon */}
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M8 2L16 2L18 8L14 12L14 20L10 20L10 12L6 8L8 2Z" stroke={torchOn ? '#A99BFF' : 'white'} strokeWidth="1.5" strokeLinejoin="round"/>
+            <path d="M6 8H18" stroke={torchOn ? '#A99BFF' : 'white'} strokeWidth="1.5"/>
+          </svg>
+        </button>
+      </div>
+
+      {/* ── Camera view / QR frame ──────────────────────────────────────────── */}
+      <div className="flex-1 flex items-center justify-center relative" style={{ paddingBottom: merchant ? '22rem' : '2rem', paddingTop: '5rem' }}>
+        {/* QR bracket frame */}
+        <div className="relative w-64 h-64">
+          {/* Corner brackets */}
+          <div className="absolute top-0 left-0 w-10 h-10" style={{ borderTop: '3px solid #A99BFF', borderLeft: '3px solid #A99BFF', borderRadius: '4px 0 0 0' }} />
+          <div className="absolute top-0 right-0 w-10 h-10" style={{ borderTop: '3px solid #A99BFF', borderRight: '3px solid #A99BFF', borderRadius: '0 4px 0 0' }} />
+          <div className="absolute bottom-0 left-0 w-10 h-10" style={{ borderBottom: '3px solid #A99BFF', borderLeft: '3px solid #A99BFF', borderRadius: '0 0 0 4px' }} />
+          <div className="absolute bottom-0 right-0 w-10 h-10" style={{ borderBottom: '3px solid #A99BFF', borderRight: '3px solid #A99BFF', borderRadius: '0 0 4px 0' }} />
+
+          {/* Center focus dot / icon */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center"
+              style={{ border: '2px solid rgba(169,155,255,0.25)' }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="3" stroke="rgba(169,155,255,0.6)" strokeWidth="1.5"/>
+                <path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke="rgba(169,155,255,0.4)" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            </div>
           </div>
+
+          {/* Animated scan line */}
+          <div
+            className="absolute left-2 right-2 h-[2px] animate-scan-line"
+            style={{
+              background: 'linear-gradient(90deg, transparent, #A99BFF, transparent)',
+              boxShadow: '0 0 12px rgba(169,155,255,0.8)',
+              top: '8px',
+            }}
+          />
         </div>
 
-        <div className="max-w-lg mx-auto space-y-5">
-          {/* Balance */}
-          <Card className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Wallet className="w-4 h-4 text-primary-400" />
-              <Label>FlowPay Balance</Label>
-            </div>
-            <p className="text-lg font-bold gradient-text">{formatINR(flowPayBalance)}</p>
-          </Card>
+        {/* Subtitle */}
+        {!merchant && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="absolute text-slate-600 text-sm"
+            style={{ bottom: '12rem' }}
+          >
+            Point camera at QR code
+          </motion.p>
+        )}
+      </div>
 
-          {/* QR Scanner */}
-          <QRScanner onMerchantSelect={setMerchant} selectedMerchant={merchant} />
-
-          {/* Merchant & Amount */}
-          <AnimatePresence>
-            {merchant && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="space-y-4"
-              >
-                {/* Merchant card */}
-                <Card className="flex items-center gap-4">
+      {/* ── Bottom Sheet ────────────────────────────────────────────────────── */}
+      <div className="absolute bottom-0 left-0 right-0 p-4">
+        <AnimatePresence>
+          {merchant && (
+            <motion.div
+              initial={{ y: 120, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 120, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="max-w-md mx-auto"
+              style={{
+                background: 'rgba(18, 16, 36, 0.95)',
+                border: '1px solid rgba(124,110,255,0.2)',
+                borderRadius: '1.5rem',
+                padding: '1.5rem',
+                backdropFilter: 'blur(24px)',
+                boxShadow: '0 -4px 40px rgba(0,0,0,0.7)',
+              }}
+            >
+              {/* Merchant info */}
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-3">
                   <div
-                    className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl border flex-shrink-0"
-                    style={{ background: `${merchant.color}20`, borderColor: `${merchant.color}40` }}
+                    className="w-12 h-12 rounded-full flex items-center justify-center text-2xl"
+                    style={{ background: 'rgba(124,110,255,0.15)', border: '1px solid rgba(124,110,255,0.3)' }}
                   >
                     {merchant.logo}
                   </div>
                   <div>
-                    <p className="font-bold text-white text-lg">{merchant.name}</p>
-                    <p className="text-sm text-slate-500">{merchant.category}</p>
-                    <p className="text-xs text-slate-600 font-mono mt-0.5">{merchant.upiId}</p>
+                    <p className="text-[10px] text-slate-500 font-bold tracking-widest uppercase">PAYING</p>
+                    <p className="font-bold text-white text-lg leading-snug">{merchant.name}</p>
                   </div>
-                  <Badge variant="green" size="sm" className="ml-auto">Verified</Badge>
-                </Card>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] text-slate-500 font-bold tracking-widest uppercase">AMOUNT</p>
+                  <p className="font-black text-2xl text-white">₹{amountNum}</p>
+                </div>
+              </div>
 
-                {/* Amount */}
-                <Card>
-                  <h3 className="font-bold text-white mb-3">Enter Amount</h3>
-                  <div className="grid grid-cols-4 gap-2 mb-3">
-                    {PRESET_AMOUNTS.map(p => (
-                      <button
-                        key={p}
-                        onClick={() => setAmount(String(p))}
-                        className={`py-2 rounded-xl text-sm font-semibold transition-all ${
-                          amount === String(p)
-                            ? 'bg-primary-600 text-white'
-                            : 'bg-white/[0.04] text-slate-400 hover:bg-white/[0.08] hover:text-white border border-white/[0.06]'
-                        }`}
-                      >
-                        ₹{p}
-                      </button>
-                    ))}
-                  </div>
-                  <Input
-                    type="number"
-                    prefix="₹"
-                    placeholder="0"
-                    value={amount}
-                    onChange={e => setAmount(e.target.value)}
-                    className="text-xl font-bold"
-                  />
-
-                  {/* Balance preview */}
-                  {amountNum > 0 && (
-                    <div className="mt-3 space-y-2 text-sm">
-                      <Separator />
-                      <div className="flex justify-between pt-2">
-                        <span className="text-slate-500">Balance Before</span>
-                        <span className="text-white font-medium">{formatINR(flowPayBalance)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-500">Payment</span>
-                        <span className="text-red-400 font-medium">−{formatINR(amountNum)}</span>
-                      </div>
-                      <div className="flex justify-between font-bold">
-                        <span className="text-slate-300">Balance After</span>
-                        <span className={affordable ? 'text-emerald-400' : 'text-red-400'}>
-                          {formatINR(Math.max(flowPayBalance - amountNum, 0))}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                </Card>
-
-                {/* Insufficient balance warning */}
-                {amountNum > 0 && !affordable && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm"
-                  >
-                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                    Insufficient FlowPay balance. <Link href="/deposit" className="underline ml-0.5">Deposit more →</Link>
-                  </motion.div>
-                )}
-
-                <Button
-                  variant="brand"
-                  size="lg"
-                  className="w-full"
-                  disabled={!canPay}
-                  loading={confirming}
-                  onClick={handleConfirm}
-                  id="confirm-payment-btn"
+              {/* Source assets */}
+              <div className="mb-5">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs text-slate-400">Source Assets</span>
+                  <span className="text-xs font-semibold" style={{ color: '#A99BFF' }}>Smart Route</span>
+                </div>
+                <div
+                  className="flex items-center justify-center gap-3 p-3 rounded-xl"
+                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
                 >
-                  {confirming ? 'Processing...' : `Pay ${formatINR(amountNum)} to ${merchant.name}`}
-                </Button>
-                <p className="text-center text-xs text-slate-600">
-                  Simulated payment · Entry into reward pool on success
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </main>
+                  {/* USDC pill */}
+                  <div
+                    className="flex items-center gap-2 py-1.5 px-3 rounded-xl"
+                    style={{ background: 'rgba(13,13,20,0.8)', border: '1px solid rgba(255,255,255,0.08)' }}
+                  >
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black text-white" style={{ background: '#2775CA' }}>U</div>
+                    <div>
+                      <p className="text-xs font-bold text-white leading-none">USDC</p>
+                      <p className="text-[10px] text-slate-500">0.38</p>
+                    </div>
+                  </div>
 
-      <BottomNav />
+                  <span className="text-slate-600">+</span>
+
+                  {/* MATIC pill */}
+                  <div
+                    className="flex items-center gap-2 py-1.5 px-3 rounded-xl"
+                    style={{ background: 'rgba(13,13,20,0.8)', border: '1px solid rgba(255,255,255,0.08)' }}
+                  >
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black text-white" style={{ background: '#8247E5' }}>M</div>
+                    <div>
+                      <p className="text-xs font-bold text-white leading-none">MATIC</p>
+                      <p className="text-[10px] text-slate-500">0.12</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Analyze & Pay button */}
+              <button
+                disabled={!canPay}
+                onClick={handleConfirm}
+                className="w-full py-4 font-bold text-white flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                style={{
+                  background: confirming
+                    ? 'linear-gradient(135deg, #7C6EFF, #6B5CE7)'
+                    : 'linear-gradient(135deg, #A99BFF 0%, #7C6EFF 60%, #6B5CE7 100%)',
+                  borderRadius: '9999px',
+                  boxShadow: canPay ? '0 4px 24px rgba(124,110,255,0.45)' : 'none',
+                }}
+              >
+                <Zap className="w-4 h-4 fill-white" />
+                {confirming ? 'Processing…' : 'Analyze & Pay'}
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {successData && (
         <SuccessModal
           isOpen={successOpen}
-          onClose={() => { setSuccessOpen(false); router.push('/dashboard'); }}
+          onClose={() => { setSuccessOpen(false); router.push('/lottery'); }}
           type="payment"
           amount={amountNum}
           merchantName={merchant?.name}

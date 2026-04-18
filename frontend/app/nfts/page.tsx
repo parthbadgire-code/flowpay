@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useWallet } from '@/hooks/useWallet';
-import { Sidebar, BottomNav } from '@/components/layout/Navigation';
+import { Navbar } from '@/components/layout/Navbar';
 import { NFTBackupModal } from '@/components/nft/NFTBackupModal';
 import { Card, Badge } from '@/components/ui';
 import { formatINR } from '@/lib/utils';
@@ -20,9 +20,9 @@ export default function NFTsPage() {
   const totalBackup = nfts.reduce((a, n) => a + n.backupLiquidity, 0);
 
   return (
-    <div className="flex min-h-screen bg-[#0A0A0F]">
-      <Sidebar />
-      <main className="flex-1 lg:ml-64 pb-24 lg:pb-6 px-4 lg:px-8 pt-6">
+    <div className="flex min-h-screen bg-[#0A0A0F] pt-20">
+      <Navbar />
+      <main className="flex-1 w-full max-w-6xl mx-auto px-4 lg:px-8 py-10">
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-black text-white">NFT Backup Liquidity</h1>
@@ -74,7 +74,6 @@ export default function NFTsPage() {
           </div>
         </div>
       </main>
-      <BottomNav />
       <NFTBackupModal isOpen={modalOpen} onClose={() => setModalOpen(false)} nfts={nfts} />
     </div>
   );
