@@ -15,7 +15,7 @@ interface CoinData {
 
 const cardGlass = {
   background: 'rgba(18, 16, 34, 0.8)',
-  border: '1px solid rgba(124,110,255,0.15)',
+  border: '1px solid rgba(0,212,170,0.15)',
   borderRadius: '1rem',
   backdropFilter: 'blur(20px)',
 };
@@ -59,7 +59,7 @@ export function CryptoPriceCard() {
       style={{ ...cardGlass, boxShadow: '0 8px 30px rgba(0,0,0,0.3)' }}
     >
       <div className="flex items-center gap-2 mb-3 px-1">
-         <Activity className="w-4 h-4" style={{ color: '#A99BFF' }} />
+         <Activity className="w-4 h-4" style={{ color: '#00D4AA' }} />
          <p className="text-xs font-bold text-white uppercase tracking-wider">Live Markets</p>
       </div>
       

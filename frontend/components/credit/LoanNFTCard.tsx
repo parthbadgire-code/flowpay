@@ -37,11 +37,11 @@ export function LoanNFTCard({ loan, onMint }: LoanNFTCardProps) {
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      whileHover={{ y: -4, boxShadow: '0 16px 48px rgba(124,58,237,0.25)' }}
+      whileHover={{ y: -4, boxShadow: '0 16px 48px rgba(0, 212, 170,0.25)' }}
       className="rounded-2xl overflow-hidden relative"
       style={{
-        background: 'rgba(14,10,26,0.98)',
-        border: '1px solid rgba(124,58,237,0.25)',
+        background: 'rgba(14, 22, 19,0.98)',
+        border: '1px solid rgba(0, 212, 170,0.25)',
         cursor: minted ? 'default' : 'pointer',
       }}
     >
@@ -49,7 +49,7 @@ export function LoanNFTCard({ loan, onMint }: LoanNFTCardProps) {
       <div
         className="h-36 flex items-center justify-center relative overflow-hidden"
         style={{
-          background: `linear-gradient(135deg, ${tokenColor}18, rgba(124,58,237,0.2), rgba(59,130,246,0.15))`,
+          background: `linear-gradient(135deg, ${tokenColor}18, rgba(0, 212, 170,0.2), rgba(0,255,135,0.15))`,
         }}
       >
         {/* Animated grid pattern */}
@@ -67,7 +67,7 @@ export function LoanNFTCard({ loan, onMint }: LoanNFTCardProps) {
         />
         <motion.div
           className="absolute w-16 h-16 rounded-full blur-2xl"
-          style={{ background: '#7C3AED', opacity: 0.3, right: '20%', top: '20%' }}
+          style={{ background: '#00D4AA', opacity: 0.3, right: '20%', top: '20%' }}
           animate={{ x: [0, -15, 0], y: [0, 10, 0] }}
           transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
         />
@@ -77,13 +77,13 @@ export function LoanNFTCard({ loan, onMint }: LoanNFTCardProps) {
           <div className="text-4xl mb-1">{tokenIcon}</div>
           <p className="text-xs font-bold text-white opacity-80">FlowPay Loan Position</p>
           {minted && (
-            <span className="text-xs text-purple-300 font-semibold">#{nftId}</span>
+            <span className="text-xs text-[#00D4AA] font-semibold">#{nftId}</span>
           )}
         </div>
 
         {minted && (
           <div className="absolute top-2 right-2">
-            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-purple-500/30 text-purple-300 border border-purple-500/40">
+            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-[#00D4AA]/30 text-[#00D4AA] border border-[#00D4AA]/40">
               ✦ Minted
             </span>
           </div>
@@ -123,8 +123,8 @@ export function LoanNFTCard({ loan, onMint }: LoanNFTCardProps) {
             disabled={minting || loan.status !== 'active'}
             className="w-full py-2.5 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             style={{
-              background: 'linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%)',
-              boxShadow: '0 4px 16px rgba(124,58,237,0.35)',
+              background: 'linear-gradient(135deg, #00D4AA 0%, #00FF87 100%)',
+              boxShadow: '0 4px 16px rgba(0, 212, 170,0.35)',
             }}
           >
             {minting ? (
@@ -144,8 +144,8 @@ export function LoanNFTCard({ loan, onMint }: LoanNFTCardProps) {
           </button>
         ) : (
           <div
-            className="w-full py-2.5 rounded-xl text-sm font-bold text-purple-300 text-center"
-            style={{ background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.2)' }}
+            className="w-full py-2.5 rounded-xl text-sm font-bold text-[#00D4AA] text-center"
+            style={{ background: 'rgba(0, 212, 170,0.1)', border: '1px solid rgba(0, 212, 170,0.2)' }}
           >
             ✦ NFT Receipt Minted
           </div>

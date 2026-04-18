@@ -77,7 +77,7 @@ export function SignUp() {
 
   const inputBase = {
     background: 'rgba(255,255,255,0.04)',
-    border: '1px solid rgba(124,110,255,0.18)',
+    border: '1px solid rgba(0,212,170,0.18)',
     borderRadius: '0.875rem',
     color: 'white',
   };
@@ -89,7 +89,7 @@ export function SignUp() {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.1 }}
         className="w-full max-w-sm relative z-10"
-        style={{ background: 'rgba(22, 20, 42, 0.9)', border: '1px solid rgba(124,110,255,0.15)', borderRadius: '1.5rem', padding: '2rem', boxShadow: '0 16px 60px rgba(0,0,0,0.6)', backdropFilter: 'blur(24px)' }}
+        style={{ background: 'rgba(22, 20, 42, 0.9)', border: '1px solid rgba(0,212,170,0.15)', borderRadius: '1.5rem', padding: '2rem', boxShadow: '0 16px 60px rgba(0,0,0,0.6)', backdropFilter: 'blur(24px)' }}
       >
         <AnimatePresence mode="wait">
           {success ? (
@@ -112,7 +112,7 @@ export function SignUp() {
                 <div className="w-8 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
                   <motion.div
                     className="h-full rounded-full"
-                    style={{ background: 'linear-gradient(90deg, #A99BFF, #6B5CE7)' }}
+                    style={{ background: 'linear-gradient(90deg, #00D4AA, #009C7A)' }}
                     initial={{ width: '0%' }}
                     animate={{ width: '100%' }}
                     transition={{ duration: 1.4, ease: 'linear' }}
@@ -143,8 +143,8 @@ export function SignUp() {
                     placeholder="you@example.com"
                     className="w-full py-3 px-4 text-sm placeholder-slate-600 outline-none transition-all"
                     style={inputBase}
-                    onFocus={(e) => { e.target.style.borderColor = 'rgba(124,110,255,0.5)'; }}
-                    onBlur={(e) => { e.target.style.borderColor = 'rgba(124,110,255,0.18)'; }}
+                    onFocus={(e) => { e.target.style.borderColor = 'rgba(0,212,170,0.5)'; }}
+                    onBlur={(e) => { e.target.style.borderColor = 'rgba(0,212,170,0.18)'; }}
                   />
                 </div>
 
@@ -160,8 +160,8 @@ export function SignUp() {
                       placeholder="Create a password"
                       className="w-full py-3 px-4 pr-11 text-sm placeholder-slate-600 outline-none transition-all"
                       style={inputBase}
-                      onFocus={(e) => { e.target.style.borderColor = 'rgba(124,110,255,0.5)'; }}
-                      onBlur={(e) => { e.target.style.borderColor = 'rgba(124,110,255,0.18)'; }}
+                      onFocus={(e) => { e.target.style.borderColor = 'rgba(0,212,170,0.5)'; }}
+                      onBlur={(e) => { e.target.style.borderColor = 'rgba(0,212,170,0.18)'; }}
                     />
                     <button
                       type="button"
@@ -189,13 +189,13 @@ export function SignUp() {
                         ...inputBase,
                         borderColor: form.confirm
                           ? (passwordsMatch ? 'rgba(52,211,153,0.4)' : 'rgba(239,68,68,0.4)')
-                          : 'rgba(124,110,255,0.18)',
+                          : 'rgba(0,212,170,0.18)',
                       }}
-                      onFocus={(e) => { e.target.style.borderColor = 'rgba(124,110,255,0.5)'; }}
+                      onFocus={(e) => { e.target.style.borderColor = 'rgba(0,212,170,0.5)'; }}
                       onBlur={(e) => {
                         e.target.style.borderColor = form.confirm
                           ? (passwordsMatch ? 'rgba(52,211,153,0.4)' : 'rgba(239,68,68,0.4)')
-                          : 'rgba(124,110,255,0.18)';
+                          : 'rgba(0,212,170,0.18)';
                       }}
                     />
                     <button
@@ -224,10 +224,10 @@ export function SignUp() {
                 className="w-full py-3.5 text-sm font-bold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed mb-5"
                 style={{
                   background: isValid
-                    ? 'linear-gradient(135deg, #A99BFF 0%, #7C6EFF 60%, #6B5CE7 100%)'
-                    : 'rgba(124,110,255,0.3)',
+                    ? 'linear-gradient(135deg, #00D4AA 0%, #00B892 60%, #009C7A 100%)'
+                    : 'rgba(0,212,170,0.3)',
                   borderRadius: '9999px',
-                  boxShadow: isValid ? '0 4px 20px rgba(124,110,255,0.4)' : 'none',
+                  boxShadow: isValid ? '0 4px 20px rgba(0,212,170,0.4)' : 'none',
                 }}
               >
                 {loading ? (

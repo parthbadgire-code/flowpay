@@ -77,8 +77,6 @@ export function Navbar() {
   const { healthFactor, riskLevel, activeLoans } = useCreditLine();
   const isLandingPage = pathname === '/';
 
-  if (!isLandingPage && isConnected) return null;
-
   const navLinks = [
     { href: '/dashboard', label: 'Dashboard' },
     { href: '/deposit', label: 'Deposit' },

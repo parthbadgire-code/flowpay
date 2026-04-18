@@ -27,7 +27,7 @@ export function BorrowingSimulator() {
       </div>
 
       {/* Amount display */}
-      <div className="rounded-2xl p-4 text-center" style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.2)' }}>
+      <div className="rounded-2xl p-4 text-center" style={{ background: 'rgba(0, 212, 170,0.08)', border: '1px solid rgba(0, 212, 170,0.2)' }}>
         <p className="text-3xl font-black text-white">{fmt(amount)}</p>
         <p className="text-xs text-slate-500 mt-1">Simulated borrow amount</p>
       </div>
@@ -42,7 +42,7 @@ export function BorrowingSimulator() {
         onChange={e => setAmount(Number(e.target.value))}
         className="w-full h-2 rounded-full appearance-none cursor-pointer"
         style={{
-          background: `linear-gradient(90deg, #7C3AED ${(amount / max) * 100}%, rgba(255,255,255,0.1) ${(amount / max) * 100}%)`,
+          background: `linear-gradient(90deg, #00D4AA ${(amount / max) * 100}%, rgba(255,255,255,0.1) ${(amount / max) * 100}%)`,
         }}
       />
       <div className="flex justify-between text-xs text-slate-600">

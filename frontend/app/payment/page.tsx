@@ -47,7 +47,7 @@ export default function PaymentPage() {
         upiId: 'rahulchai@ybl',
         category: 'Food & Beverage',
         logo: '🏪',
-        color: '#7C6EFF',
+        color: '#00B892',
       });
     }, 1800);
   }, [isConnected, tryDemo]);
@@ -112,7 +112,7 @@ export default function PaymentPage() {
     <div className="flex flex-col min-h-screen relative overflow-hidden bg-[#080810]">
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse at 50% 40%, rgba(107,92,231,0.06) 0%, transparent 60%)' }}
+        style={{ background: 'radial-gradient(ellipse at 50% 40%, rgba(0,184,146,0.06) 0%, transparent 60%)' }}
       />
 
       {/* ── Top Header ── */}
@@ -128,8 +128,8 @@ export default function PaymentPage() {
           className="w-10 h-10 rounded-full flex items-center justify-center transition-all bg-white/5 border border-white/10 backdrop-blur-md"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M8 2L16 2L18 8L14 12L14 20L10 20L10 12L6 8L8 2Z" stroke={torchOn ? '#A99BFF' : 'white'} strokeWidth="1.5" strokeLinejoin="round"/>
-            <path d="M6 8H18" stroke={torchOn ? '#A99BFF' : 'white'} strokeWidth="1.5"/>
+            <path d="M8 2L16 2L18 8L14 12L14 20L10 20L10 12L6 8L8 2Z" stroke={torchOn ? '#00D4AA' : 'white'} strokeWidth="1.5" strokeLinejoin="round"/>
+            <path d="M6 8H18" stroke={torchOn ? '#00D4AA' : 'white'} strokeWidth="1.5"/>
           </svg>
         </button>
       </div>
@@ -195,7 +195,7 @@ export default function PaymentPage() {
                 <button
                   disabled={!canProceed || analyzing}
                   onClick={handleAnalyze}
-                  className="w-full py-4 font-bold text-white flex items-center justify-center gap-2 transition-all rounded-full bg-gradient-to-br from-[#A99BFF] to-[#6B5CE7]"
+                  className="w-full py-4 font-bold text-white flex items-center justify-center gap-2 transition-all rounded-full bg-gradient-to-br from-[#00D4AA] to-[#009C7A]"
                 >
                   <Zap className="w-4 h-4 fill-white" />
                   {analyzing ? 'Analyzing Routes…' : 'Analyze Wallet'}
@@ -204,7 +204,7 @@ export default function PaymentPage() {
                 <button
                   disabled={confirming}
                   onClick={handlePay}
-                  className="w-full py-4 font-bold text-white flex items-center justify-center gap-2 transition-all rounded-full bg-gradient-to-br from-[#A99BFF] to-[#6B5CE7]"
+                  className="w-full py-4 font-bold text-white flex items-center justify-center gap-2 transition-all rounded-full bg-gradient-to-br from-[#00D4AA] to-[#009C7A]"
                 >
                   <Zap className="w-4 h-4 fill-white" />
                   {confirming ? 'Sending Tx (Testnet)…' : 'Confirm & Pay'}

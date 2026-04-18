@@ -39,7 +39,7 @@ export function Login() {
 
   const inputStyle: React.CSSProperties = {
     background: 'rgba(255,255,255,0.04)',
-    border: '1px solid rgba(124,110,255,0.18)',
+    border: '1px solid rgba(0,212,170,0.18)',
     borderRadius: '0.875rem',
     color: 'white',
   };
@@ -56,7 +56,7 @@ export function Login() {
         className="w-full max-w-sm relative z-10"
         style={{
           background: 'rgba(22, 20, 42, 0.9)',
-          border: '1px solid rgba(124,110,255,0.15)',
+          border: '1px solid rgba(0,212,170,0.15)',
           borderRadius: '1.5rem',
           padding: '2rem',
           boxShadow: '0 16px 60px rgba(0,0,0,0.6)',
@@ -85,8 +85,8 @@ export function Login() {
               autoComplete="email"
               className="w-full py-3 px-4 text-sm placeholder-slate-600 outline-none transition-all"
               style={inputStyle}
-              onFocus={e => { e.target.style.borderColor = 'rgba(124,110,255,0.5)'; }}
-              onBlur={e  => { e.target.style.borderColor = 'rgba(124,110,255,0.18)'; }}
+              onFocus={e => { e.target.style.borderColor = 'rgba(0,212,170,0.5)'; }}
+              onBlur={e  => { e.target.style.borderColor = 'rgba(0,212,170,0.18)'; }}
             />
           </div>
 
@@ -97,9 +97,9 @@ export function Login() {
               <button
                 type="button"
                 className="text-xs transition-colors"
-                style={{ color: '#A99BFF' }}
+                style={{ color: '#00D4AA' }}
                 onMouseEnter={e => { (e.currentTarget).style.color = '#C4B5FD'; }}
-                onMouseLeave={e => { (e.currentTarget).style.color = '#A99BFF'; }}
+                onMouseLeave={e => { (e.currentTarget).style.color = '#00D4AA'; }}
               >
                 Forgot password?
               </button>
@@ -114,8 +114,8 @@ export function Login() {
                 autoComplete="current-password"
                 className="w-full py-3 px-4 pr-11 text-sm placeholder-slate-600 outline-none transition-all"
                 style={inputStyle}
-                onFocus={e => { e.target.style.borderColor = 'rgba(124,110,255,0.5)'; }}
-                onBlur={e  => { e.target.style.borderColor = 'rgba(124,110,255,0.18)'; }}
+                onFocus={e => { e.target.style.borderColor = 'rgba(0,212,170,0.5)'; }}
+                onBlur={e  => { e.target.style.borderColor = 'rgba(0,212,170,0.18)'; }}
               />
               <button
                 type="button"
@@ -140,12 +140,12 @@ export function Login() {
             disabled={!isValid || loading}
             className="w-full py-3.5 text-sm font-bold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-1"
             style={{
-              background: 'linear-gradient(135deg, #A99BFF 0%, #7C6EFF 60%, #6B5CE7 100%)',
+              background: 'linear-gradient(135deg, #00D4AA 0%, #00B892 60%, #009C7A 100%)',
               borderRadius: '9999px',
-              boxShadow: isValid ? '0 4px 20px rgba(124,110,255,0.4)' : 'none',
+              boxShadow: isValid ? '0 4px 20px rgba(0,212,170,0.4)' : 'none',
             }}
-            onMouseEnter={e => { if (isValid && !loading) (e.currentTarget).style.boxShadow = '0 6px 28px rgba(124,110,255,0.6)'; }}
-            onMouseLeave={e => { (e.currentTarget).style.boxShadow = isValid ? '0 4px 20px rgba(124,110,255,0.4)' : 'none'; }}
+            onMouseEnter={e => { if (isValid && !loading) (e.currentTarget).style.boxShadow = '0 6px 28px rgba(0,212,170,0.6)'; }}
+            onMouseLeave={e => { (e.currentTarget).style.boxShadow = isValid ? '0 4px 20px rgba(0,212,170,0.4)' : 'none'; }}
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
@@ -162,7 +162,7 @@ export function Login() {
         {/* Footer */}
         <p className="text-center text-xs text-slate-500 mt-5">
           New to FlowPay?{' '}
-          <Link href="/signup" className="font-medium transition-colors" style={{ color: '#A99BFF' }}>
+          <Link href="/signup" className="font-medium transition-colors" style={{ color: '#00D4AA' }}>
             Create account
           </Link>
         </p>

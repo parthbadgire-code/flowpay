@@ -17,7 +17,7 @@ export function UserMenu() {
     <div className="relative">
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="w-9 h-9 rounded-full bg-primary-600/20 border border-primary-500/40 flex items-center justify-center text-primary-300 hover:bg-primary-600/40 hover:scale-105 transition-all shadow-[0_0_15px_rgba(124,110,255,0.2)]"
+        className="w-9 h-9 rounded-full bg-primary-600/20 border border-primary-500/40 flex items-center justify-center text-primary-300 hover:bg-primary-600/40 hover:scale-105 transition-all shadow-[0_0_15px_rgba(0,212,170,0.2)]"
       >
         <span className="font-bold text-sm">
           {user.email?.charAt(0).toUpperCase() || <User className="w-4 h-4" />}
@@ -37,7 +37,7 @@ export function UserMenu() {
               style={{ background: 'rgba(22, 20, 42, 0.95)', backdropFilter: 'blur(24px)', boxShadow: '0 16px 40px rgba(0,0,0,0.6)' }}
             >
               <div className="px-3 py-3 border-b border-white/10 mb-1">
-                <p className="text-[10px] uppercase font-bold tracking-widest text-[#A99BFF] mb-1">Account Profile</p>
+                <p className="text-[10px] uppercase font-bold tracking-widest text-[#00D4AA] mb-1">Account Profile</p>
                 <p className="text-sm font-semibold text-white truncate" title={user.email}>{user.email}</p>
               </div>
               <button

@@ -11,8 +11,8 @@ export default function SignupPage() {
       style={{ background: '#0D0D14' }}
     >
       {/* Background glows */}
-      <div className="absolute pointer-events-none" style={{ top: '-10%', left: '50%', transform: 'translateX(-50%)', width: '700px', height: '400px', background: 'radial-gradient(ellipse, rgba(107,92,231,0.12) 0%, transparent 70%)' }} />
-      <div className="absolute pointer-events-none" style={{ bottom: '0', right: '15%', width: '350px', height: '350px', background: 'radial-gradient(ellipse, rgba(124,110,255,0.06) 0%, transparent 70%)' }} />
+      <div className="absolute pointer-events-none" style={{ top: '-10%', left: '50%', transform: 'translateX(-50%)', width: '700px', height: '400px', background: 'radial-gradient(ellipse, rgba(0,184,146,0.12) 0%, transparent 70%)' }} />
+      <div className="absolute pointer-events-none" style={{ bottom: '0', right: '15%', width: '350px', height: '350px', background: 'radial-gradient(ellipse, rgba(0,212,170,0.06) 0%, transparent 70%)' }} />
 
       {/* Logo */}
       <motion.div
@@ -24,7 +24,7 @@ export default function SignupPage() {
         <Link href="/">
           <span
             className="text-3xl font-black cursor-pointer"
-            style={{ background: 'linear-gradient(135deg, #A99BFF 0%, #7C6EFF 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
+            style={{ background: 'linear-gradient(135deg, #00D4AA 0%, #00B892 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
           >
             FlowPay
           </span>

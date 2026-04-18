@@ -9,7 +9,6 @@ import {
 import Link from 'next/link';
 import { useWallet } from '@/hooks/useWallet';
 import { useCreditLine } from '@/hooks/useCreditLine';
-import { Navbar } from '@/components/layout/Navbar';
 import { Badge } from '@/components/ui';
 
 // Credit components
@@ -64,8 +63,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col min-h-screen pt-20" style={{ background: '#0D1412' }}>
-      <Navbar />
-
+      
       {/* Liquidation push toast */}
       <LiquidationToast />
 
@@ -115,10 +113,10 @@ export default function DashboardPage() {
               className="flex flex-col items-center justify-center py-20 text-center">
               <div className="relative mb-8">
                 <div className="w-24 h-24 rounded-3xl flex items-center justify-center mx-auto"
-                  style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.15), rgba(59,130,246,0.1))', border: '1px solid rgba(124,110,255,0.3)', boxShadow: '0 0 40px rgba(124,110,255,0.15)' }}>
+                  style={{ background: 'linear-gradient(135deg, rgba(0, 212, 170,0.15), rgba(0,255,135,0.1))', border: '1px solid rgba(0,212,170,0.3)', boxShadow: '0 0 40px rgba(0,212,170,0.15)' }}>
                   <span className="text-4xl">🏦</span>
                 </div>
-                <motion.div className="absolute -top-2 -right-2 w-4 h-4 rounded-full" style={{ background: 'rgba(124,58,237,0.6)' }}
+                <motion.div className="absolute -top-2 -right-2 w-4 h-4 rounded-full" style={{ background: 'rgba(0, 212, 170,0.6)' }}
                   animate={{ y: [0, -8, 0], opacity: [0.4, 1, 0.4] }} transition={{ duration: 2.5, repeat: Infinity }} />
               </div>
               <h2 className="text-2xl font-black text-white mb-3">Crypto-Backed Credit Line</h2>
@@ -126,8 +124,8 @@ export default function DashboardPage() {
                 Deposit ETH or USDC as collateral and borrow against them instantly. No credit score needed.
               </p>
               <motion.button onClick={handleConnect} disabled={connecting}
-                className="px-8 py-3.5 text-sm font-bold text-white rounded-full transition-all disabled:opacity-60 flex items-center gap-2 mb-6"
-                style={{ background: 'linear-gradient(135deg, #7C3AED, #3B82F6)', boxShadow: '0 4px 24px rgba(124,58,237,0.45)' }}
+                className="px-8 py-3.5 text-sm font-bold text-black rounded-full transition-all disabled:opacity-60 flex items-center gap-2 mb-6"
+                style={{ background: 'linear-gradient(135deg, #00D4AA, #00FF87)', boxShadow: '0 4px 24px rgba(0, 212, 170,0.45)' }}
                 whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 {connecting ? 'Connecting…' : '🔗 Connect Wallet'}
               </motion.button>
@@ -137,7 +135,7 @@ export default function DashboardPage() {
                   { icon: '⚡', title: 'Instant Liquidity', desc: 'Borrow USDC or mock INR' },
                   { icon: '🖼️', title: 'NFT Receipts', desc: 'Mint your loan as an NFT' },
                 ].map(item => (
-                  <div key={item.title} className="rounded-2xl p-4 text-center" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(124,110,255,0.1)' }}>
+                  <div key={item.title} className="rounded-2xl p-4 text-center" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(0,212,170,0.1)' }}>
                     <p className="text-2xl mb-2">{item.icon}</p>
                     <p className="text-sm font-bold text-white mb-1">{item.title}</p>
                     <p className="text-xs text-slate-500">{item.desc}</p>
@@ -166,7 +164,7 @@ export default function DashboardPage() {
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {[
                       { label: 'Deposit', icon: <ArrowDownToLine className="w-5 h-5" />, color: TEAL, bg: 'rgba(0,212,170,0.08)', border: 'rgba(0,212,170,0.2)', action: () => setDepositOpen(true) },
-                      { label: 'Borrow', icon: <TrendingUp className="w-5 h-5" />, color: '#627EEA', bg: 'rgba(98,126,234,0.08)', border: 'rgba(98,126,234,0.2)', action: () => setBorrowOpen(true) },
+                      { label: 'Borrow', icon: <TrendingUp className="w-5 h-5" />, color: '#00B892', bg: 'rgba(0,184,146,0.08)', border: 'rgba(0,184,146,0.2)', action: () => setBorrowOpen(true) },
                       { label: 'Repay', icon: <ArrowUpLeft className="w-5 h-5" />, color: MINT, bg: 'rgba(0,255,135,0.08)', border: 'rgba(0,255,135,0.2)', action: () => setRepayOpen(true) },
                       { label: 'Withdraw', icon: <Unlock className="w-5 h-5" />, color: ORANGE, bg: 'rgba(255,168,88,0.08)', border: 'rgba(255,168,88,0.2)', action: () => setWithdrawOpen(true) },
                     ].map(action => (
@@ -262,8 +260,8 @@ export default function DashboardPage() {
                     <p className="text-xs text-slate-500 uppercase tracking-wider mb-4">Credit Summary</p>
                     <div className="space-y-3">
                       {[
-                        { label: 'Total Collateral', value: fmt(totalCollateralUSD), color: '#A78BFA' },
-                        { label: 'Total Borrowed', value: fmt(totalBorrowedUSD), color: '#60A5FA' },
+                        { label: 'Total Collateral', value: fmt(totalCollateralUSD), color: '#00FF87' },
+                        { label: 'Total Borrowed', value: fmt(totalBorrowedUSD), color: '#00D4AA' },
                         { label: 'Available Credit', value: fmt(availableCreditUSD), color: '#34D399' },
                         { label: 'Health Factor', value: healthFactor === 999 ? '∞' : healthFactor.toFixed(2), color: riskLevel === 'safe' ? '#34D399' : riskLevel === 'moderate' ? '#FBBF24' : '#F87171' },
                       ].map(item => (

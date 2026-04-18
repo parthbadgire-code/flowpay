@@ -96,7 +96,7 @@ export function LoanTable({ onRepay }: LoanTableProps) {
             {['Type', 'Amount', 'Token', 'Date'].map(h => <span key={h}>{h}</span>)}
           </div>
           {transactions.map((tx, i) => {
-            const typeColor = tx.type === 'deposit' ? '#A78BFA' : tx.type === 'borrow' ? '#60A5FA' : tx.type === 'repay' ? '#34D399' : '#FB923C';
+            const typeColor = tx.type === 'deposit' ? '#00D4AA' : tx.type === 'borrow' ? '#60A5FA' : tx.type === 'repay' ? '#34D399' : '#FB923C';
             return (
               <motion.div
                 key={tx.id}

@@ -45,7 +45,7 @@ export function DepositModal({ isOpen, onClose }: DepositModalProps) {
       <div className="absolute inset-0 bg-black/80 backdrop-blur-md" />
       <motion.div
         className="relative w-full max-w-md rounded-3xl p-6 z-10"
-        style={{ background: 'rgba(14,10,24,0.99)', border: '1px solid rgba(124,58,237,0.25)' }}
+        style={{ background: 'rgba(14,10,24,0.99)', border: '1px solid rgba(0, 212, 170,0.25)' }}
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9 }}
@@ -65,8 +65,8 @@ export function DepositModal({ isOpen, onClose }: DepositModalProps) {
               {/* Header */}
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-purple-500/20 flex items-center justify-center">
-                    <ArrowDownToLine className="w-4 h-4 text-purple-400" />
+                  <div className="w-9 h-9 rounded-xl bg-[#00D4AA]/20 flex items-center justify-center">
+                    <ArrowDownToLine className="w-4 h-4 text-[#00D4AA]" />
                   </div>
                   <div>
                     <h2 className="text-base font-black text-white">Deposit Collateral</h2>
@@ -125,7 +125,7 @@ export function DepositModal({ isOpen, onClose }: DepositModalProps) {
               {parseFloat(amount) > 0 && (
                 <div className="grid grid-cols-2 gap-3 mb-5">
                   {[
-                    { label: 'Collateral Value', value: displayValue, color: '#A78BFA' },
+                    { label: 'Collateral Value', value: displayValue, color: '#00D4AA' },
                     { label: 'Max You Can Borrow', value: currency === 'INR' ? `₹${(maxBorrow * INR_PER_USD).toFixed(0)}` : `$${maxBorrow.toFixed(2)}`, color: '#34D399' },
                     { label: 'LTV Rule', value: `${LTV_RULES[token] * 100}% max`, color: '#F59E0B' },
                     { label: 'Liquidation at', value: `${(LTV_RULES[token] * 100 / 0.75).toFixed(0)}% usage`, color: '#F87171' },

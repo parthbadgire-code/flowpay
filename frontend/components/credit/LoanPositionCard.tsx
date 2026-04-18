@@ -45,7 +45,7 @@ export function LoanPositionCard({ loan, onMintNFT, onRepay }: LoanPositionCardP
       animate={{ opacity: 1, y: 0 }}
       className="rounded-2xl p-5 relative overflow-hidden"
       style={{
-        background: 'rgba(18,16,34,0.95)',
+        background: 'rgba(14,22,19,0.92)',
         border: `1px solid ${tokenColor}22`,
         boxShadow: `0 4px 24px rgba(0,0,0,0.3)`,
       }}
@@ -119,13 +119,13 @@ export function LoanPositionCard({ loan, onMintNFT, onRepay }: LoanPositionCardP
             <button
               onClick={handleMint}
               disabled={minting || isLoading}
-              className="flex-1 py-2 rounded-xl text-xs font-bold text-purple-400 transition-all hover:bg-purple-500/10 disabled:opacity-50"
+              className="flex-1 py-2 rounded-xl text-xs font-bold text-[#00D4AA] transition-all hover:bg-[#00D4AA]/10 disabled:opacity-50"
               style={{ border: '1px solid rgba(167,139,250,0.3)' }}
             >
               {minting ? 'Minting…' : '✦ Mint NFT'}
             </button>
           ) : (
-            <div className="flex-1 py-2 rounded-xl text-xs font-bold text-center text-purple-300"
+            <div className="flex-1 py-2 rounded-xl text-xs font-bold text-center text-[#00D4AA]"
               style={{ border: '1px solid rgba(167,139,250,0.2)', background: 'rgba(167,139,250,0.05)' }}>
               NFT #{loan.nftTokenId}
             </div>

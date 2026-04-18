@@ -64,7 +64,7 @@ export function PriceFeedCard() {
             transition={{ delay: i * 0.1 }}
             className="rounded-2xl p-4 relative overflow-hidden"
             style={{
-              background: 'rgba(18,16,34,0.9)',
+              background: 'rgba(14,22,19,0.92)',
               border: `1px solid ${feed.color}22`,
             }}
           >

@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useWallet } from '@/hooks/useWallet';
 import { useFlowPay } from '@/lib/flowpayContext';
-import { Navbar } from '@/components/layout/Navbar';
 import { mockLotteryPool, mockLotteryWinners } from '@/data/lotteryWinners';
 import { motion } from 'framer-motion';
 import { ArrowRight, Check, Sparkles } from 'lucide-react';
@@ -59,15 +58,14 @@ export default function LotteryPage() {
 
   const cardStyle = {
     background: 'rgba(18, 16, 34, 0.9)',
-    border: '1px solid rgba(124,110,255,0.15)',
+    border: '1px solid rgba(0,212,170,0.15)',
     borderRadius: '1.25rem',
     backdropFilter: 'blur(20px)',
   };
 
   return (
     <div className="flex flex-col min-h-screen" style={{ background: '#0D0D14' }}>
-      <Navbar />
-
+      
       <main className="flex-1 w-full max-w-6xl mx-auto px-4 lg:px-8 pt-24 pb-8">
         <div className="grid lg:grid-cols-[1fr_1.1fr] gap-8 items-start">
 
@@ -78,26 +76,26 @@ export default function LotteryPage() {
             className="rounded-3xl p-8 relative overflow-hidden min-h-[520px] flex flex-col items-center"
             style={{
               background: 'rgba(14, 12, 28, 0.95)',
-              border: '1px solid rgba(124,110,255,0.12)',
+              border: '1px solid rgba(0,212,170,0.12)',
               boxShadow: '0 4px 40px rgba(0,0,0,0.5)',
             }}
           >
             {/* Background blobs */}
-            <div className="absolute -top-16 -left-16 w-48 h-48 rounded-full pointer-events-none" style={{ background: 'radial-gradient(ellipse, rgba(107,92,231,0.18) 0%, transparent 70%)' }} />
-            <div className="absolute top-8 right-8 w-4 h-4 rounded-full" style={{ background: 'rgba(107,92,231,0.4)' }} />
-            <div className="absolute top-24 right-24 w-3 h-3 rotate-45" style={{ background: 'rgba(169,155,255,0.3)' }} />
+            <div className="absolute -top-16 -left-16 w-48 h-48 rounded-full pointer-events-none" style={{ background: 'radial-gradient(ellipse, rgba(0,184,146,0.18) 0%, transparent 70%)' }} />
+            <div className="absolute top-8 right-8 w-4 h-4 rounded-full" style={{ background: 'rgba(0,184,146,0.4)' }} />
+            <div className="absolute top-24 right-24 w-3 h-3 rotate-45" style={{ background: 'rgba(0,255,135,0.3)' }} />
 
             {/* Check circle */}
             <div className="mt-8 mb-5">
               <div
                 className="w-20 h-20 rounded-full flex items-center justify-center"
                 style={{
-                  background: 'linear-gradient(135deg, rgba(169,155,255,0.2), rgba(107,92,231,0.2))',
-                  border: '2px solid rgba(124,110,255,0.4)',
-                  boxShadow: '0 0 30px rgba(124,110,255,0.25)',
+                  background: 'linear-gradient(135deg, rgba(0,255,135,0.2), rgba(0,184,146,0.2))',
+                  border: '2px solid rgba(0,212,170,0.4)',
+                  boxShadow: '0 0 30px rgba(0,212,170,0.25)',
                 }}
               >
-                <Check className="w-9 h-9" style={{ color: '#A99BFF' }} strokeWidth={2.5} />
+                <Check className="w-9 h-9" style={{ color: '#00D4AA' }} strokeWidth={2.5} />
               </div>
             </div>
 
@@ -109,11 +107,11 @@ export default function LotteryPage() {
               {/* Paid from row */}
               <div className="flex items-center justify-between p-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(124,110,255,0.15)', border: '1px solid rgba(124,110,255,0.25)' }}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(0,212,170,0.15)', border: '1px solid rgba(0,212,170,0.25)' }}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                      <rect x="2" y="7" width="20" height="14" rx="2" stroke="#A99BFF" strokeWidth="1.5"/>
-                      <path d="M16 14a1 1 0 1 0 2 0 1 1 0 0 0-2 0z" fill="#A99BFF"/>
-                      <path d="M2 11h20" stroke="#A99BFF" strokeWidth="1.5"/>
+                      <rect x="2" y="7" width="20" height="14" rx="2" stroke="#00D4AA" strokeWidth="1.5"/>
+                      <path d="M16 14a1 1 0 1 0 2 0 1 1 0 0 0-2 0z" fill="#00D4AA"/>
+                      <path d="M2 11h20" stroke="#00D4AA" strokeWidth="1.5"/>
                     </svg>
                   </div>
                   <div className="text-left">
@@ -130,18 +128,18 @@ export default function LotteryPage() {
               {/* Lottery entry earned */}
               <div
                 className="flex items-center justify-between p-4 rounded-2xl cursor-pointer group transition-all"
-                style={{ background: 'rgba(107,92,231,0.12)', border: '1px solid rgba(124,110,255,0.25)' }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(107,92,231,0.2)'; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(107,92,231,0.12)'; }}
+                style={{ background: 'rgba(0,184,146,0.12)', border: '1px solid rgba(0,212,170,0.25)' }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(0,184,146,0.2)'; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(0,184,146,0.12)'; }}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: 'rgba(124,110,255,0.2)' }}>🎲</div>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: 'rgba(0,212,170,0.2)' }}>🎲</div>
                   <div className="text-left">
                     <p className="text-white font-bold text-sm">Lottery Entry Earned!</p>
-                    <p className="text-xs" style={{ color: '#A99BFF' }}>You&apos;re in the next draw.</p>
+                    <p className="text-xs" style={{ color: '#00D4AA' }}>You&apos;re in the next draw.</p>
                   </div>
                 </div>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" style={{ color: '#A99BFF' }} />
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" style={{ color: '#00D4AA' }} />
               </div>
             </div>
 
@@ -159,7 +157,7 @@ export default function LotteryPage() {
             animate={{ opacity: 1, x: 0 }}
           >
             <h1 className="text-2xl font-black text-white mb-4">
-              The <span style={{ color: '#A99BFF' }}>Vault</span>
+              The <span style={{ color: '#00D4AA' }}>Vault</span>
             </h1>
 
             {/* Active Pool Card */}
@@ -167,7 +165,7 @@ export default function LotteryPage() {
               <div className="flex items-center justify-between mb-4">
                 <span
                   className="text-xs font-bold px-3 py-1 rounded-full"
-                  style={{ background: 'rgba(124,110,255,0.15)', color: '#A99BFF', border: '1px solid rgba(124,110,255,0.3)' }}
+                  style={{ background: 'rgba(0,212,170,0.15)', color: '#00D4AA', border: '1px solid rgba(0,212,170,0.3)' }}
                 >
                   ACTIVE POOL
                 </span>
@@ -186,7 +184,7 @@ export default function LotteryPage() {
                 <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
                   <motion.div
                     className="h-full rounded-full"
-                    style={{ background: 'linear-gradient(90deg, #7C6EFF, #A99BFF)' }}
+                    style={{ background: 'linear-gradient(90deg, #00B892, #00D4AA)' }}
                     initial={{ width: 0 }}
                     animate={{ width: `${capacityPct}%` }}
                     transition={{ duration: 1, ease: 'easeOut' }}
@@ -215,14 +213,14 @@ export default function LotteryPage() {
               className="w-full py-4 mb-5 flex items-center justify-center gap-2 font-bold text-white rounded-2xl transition-all disabled:opacity-60"
               style={{
                 background: 'rgba(18,16,34,0.9)',
-                border: '1px solid rgba(124,110,255,0.2)',
-                boxShadow: '0 0 0 0 rgba(169,155,255,0)',
+                border: '1px solid rgba(0,212,170,0.2)',
+                boxShadow: '0 0 0 0 rgba(0,255,135,0)',
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(107,92,231,0.15)'; }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(0,184,146,0.15)'; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(18,16,34,0.9)'; }}
             >
-              <Sparkles className="w-4 h-4" style={{ color: '#A99BFF' }} />
-              <span style={{ color: '#A99BFF' }}>{loadingPick ? 'Drawing…' : 'Pick Winner (Admin)'}</span>
+              <Sparkles className="w-4 h-4" style={{ color: '#00D4AA' }} />
+              <span style={{ color: '#00D4AA' }}>{loadingPick ? 'Drawing…' : 'Pick Winner (Admin)'}</span>
             </button>
 
             {/* Recent Winners */}
@@ -240,7 +238,7 @@ export default function LotteryPage() {
                   >
                     <div
                       className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                      style={{ background: w.avatarColor || 'linear-gradient(135deg, #A99BFF, #6B5CE7)' }}
+                      style={{ background: w.avatarColor || 'linear-gradient(135deg, #00D4AA, #009C7A)' }}
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="white" strokeWidth="1.5"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
                     </div>
@@ -248,7 +246,7 @@ export default function LotteryPage() {
                       <p className="text-sm font-semibold text-white truncate">{w.shortAddress}</p>
                       <p className="text-xs text-slate-500">{formatTimeAgo(w.timestamp)}</p>
                     </div>
-                    <p className="text-sm font-bold" style={{ color: '#A99BFF' }}>
+                    <p className="text-sm font-bold" style={{ color: '#00D4AA' }}>
                       {w.prize.icon && `${Math.round(w.prize.valueINR / 83)} USDC`}
                     </p>
                   </motion.div>

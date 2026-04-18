@@ -45,7 +45,7 @@ export function NFTBackupModal({ isOpen, onClose, nfts }: NFTBackupModalProps) {
               <div className="flex items-center gap-3 mb-3">
                 <div
                   className="w-12 h-12 rounded-xl overflow-hidden bg-white/5 flex-shrink-0 flex items-center justify-center text-2xl"
-                  style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(59,130,246,0.2))' }}
+                  style={{ background: 'linear-gradient(135deg, rgba(0, 212, 170,0.2), rgba(59,130,246,0.2))' }}
                 >
                   🖼️
                 </div>

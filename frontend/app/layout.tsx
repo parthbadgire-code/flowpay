@@ -5,6 +5,7 @@ import { Web3Provider } from '@/components/providers/Web3Provider';
 import { FlowPayProvider } from '@/lib/flowpayContext';
 import { CreditLineProvider } from '@/lib/creditLineContext';
 import { AuthProvider } from '@/lib/AuthContext';
+import { Navbar } from '@/components/layout/Navbar';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -43,6 +44,7 @@ export default function RootLayout({
           <FlowPayProvider>
             <CreditLineProvider>
               <AuthProvider>
+                <Navbar />
                 {children}
               </AuthProvider>
             </CreditLineProvider>
