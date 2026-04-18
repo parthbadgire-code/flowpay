@@ -28,11 +28,11 @@ const inputStyle: React.CSSProperties = {
 export function Login({ onSuccess }: LoginProps) {
   const router = useRouter();
 
-  const [email, setEmail]     = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPw, setShowPw]   = useState(false);
+  const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState('');
+  const [error, setError] = useState('');
 
   const isValid = email.includes('@') && password.length >= 1;
 
@@ -103,7 +103,7 @@ export function Login({ onSuccess }: LoginProps) {
             className="w-full py-3 px-4 text-sm placeholder-slate-600 outline-none transition-all"
             style={inputStyle}
             onFocus={e => { e.target.style.borderColor = 'rgba(124,110,255,0.5)'; }}
-            onBlur={e  => { e.target.style.borderColor = 'rgba(124,110,255,0.18)'; }}
+            onBlur={e => { e.target.style.borderColor = 'rgba(124,110,255,0.18)'; }}
           />
         </div>
 
@@ -134,7 +134,7 @@ export function Login({ onSuccess }: LoginProps) {
               className="w-full py-3 px-4 pr-11 text-sm placeholder-slate-600 outline-none transition-all"
               style={inputStyle}
               onFocus={e => { e.target.style.borderColor = 'rgba(124,110,255,0.5)'; }}
-              onBlur={e  => { e.target.style.borderColor = 'rgba(124,110,255,0.18)'; }}
+              onBlur={e => { e.target.style.borderColor = 'rgba(124,110,255,0.18)'; }}
             />
             <button
               type="button"

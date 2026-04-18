@@ -18,9 +18,9 @@ interface SignUpProps {
 
 function PasswordStrength({ password }: { password: string }) {
   const checks = [
-    { label: 'At least 8 characters',   pass: password.length >= 8 },
-    { label: 'Contains a number',        pass: /\d/.test(password) },
-    { label: 'Contains uppercase letter',pass: /[A-Z]/.test(password) },
+    { label: 'At least 8 characters', pass: password.length >= 8 },
+    { label: 'Contains a number', pass: /\d/.test(password) },
+    { label: 'Contains uppercase letter', pass: /[A-Z]/.test(password) },
   ];
 
   if (!password) return null;
@@ -60,13 +60,13 @@ const inputBase: React.CSSProperties = {
 export function SignUp({ onSuccess }: SignUpProps) {
   const router = useRouter();
 
-  const [form, setForm]         = useState({ email: '', password: '', confirm: '' });
-  const [showPw, setShowPw]     = useState(false);
+  const [form, setForm] = useState({ email: '', password: '', confirm: '' });
+  const [showPw, setShowPw] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   // 'idle' | 'email_sent' | 'redirecting'
-  const [status, setStatus]     = useState<'idle' | 'email_sent' | 'redirecting'>('idle');
+  const [status, setStatus] = useState<'idle' | 'email_sent' | 'redirecting'>('idle');
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm(prev => ({ ...prev, [k]: e.target.value }));
@@ -218,7 +218,7 @@ export function SignUp({ onSuccess }: SignUpProps) {
                   className="w-full py-3 px-4 text-sm placeholder-slate-600 outline-none transition-all"
                   style={inputBase}
                   onFocus={e => { e.target.style.borderColor = 'rgba(124,110,255,0.5)'; }}
-                  onBlur={e  => { e.target.style.borderColor = 'rgba(124,110,255,0.18)'; }}
+                  onBlur={e => { e.target.style.borderColor = 'rgba(124,110,255,0.18)'; }}
                 />
               </div>
 
@@ -236,7 +236,7 @@ export function SignUp({ onSuccess }: SignUpProps) {
                     className="w-full py-3 px-4 pr-11 text-sm placeholder-slate-600 outline-none transition-all"
                     style={inputBase}
                     onFocus={e => { e.target.style.borderColor = 'rgba(124,110,255,0.5)'; }}
-                    onBlur={e  => { e.target.style.borderColor = 'rgba(124,110,255,0.18)'; }}
+                    onBlur={e => { e.target.style.borderColor = 'rgba(124,110,255,0.18)'; }}
                   />
                   <button
                     type="button"
@@ -269,7 +269,7 @@ export function SignUp({ onSuccess }: SignUpProps) {
                         : 'rgba(124,110,255,0.18)',
                     }}
                     onFocus={e => { e.target.style.borderColor = 'rgba(124,110,255,0.5)'; }}
-                    onBlur={e  => {
+                    onBlur={e => {
                       e.target.style.borderColor = form.confirm
                         ? (passwordsMatch ? 'rgba(52,211,153,0.4)' : 'rgba(239,68,68,0.4)')
                         : 'rgba(124,110,255,0.18)';
