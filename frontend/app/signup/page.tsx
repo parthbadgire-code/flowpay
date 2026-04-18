@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { Eye, EyeOff, CheckCircle2, XCircle } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 function PasswordStrength({ password }: { password: string }) {
   const checks = [
@@ -54,13 +55,28 @@ export default function SignupPage() {
     if (!isValid) return;
     setError('');
     setLoading(true);
-    // Simulate account creation
-    await new Promise(r => setTimeout(r, 1200));
+
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email: form.email,
+      password: form.password,
+    });
+
     setLoading(false);
-    setSuccess(true);
-    // Small celebration pause then redirect to dashboard (no wallet connected yet)
-    await new Promise(r => setTimeout(r, 1500));
-    router.push('/dashboard');
+
+    if (signUpError) {
+      setError(signUpError.message);
+      return;
+    }
+
+    // If email confirmation is disabled, session is returned immediately
+    if (data.session) {
+      setSuccess(true);
+      await new Promise(r => setTimeout(r, 1500));
+      router.push('/dashboard');
+    } else {
+      // Email confirmation required — show success screen with different message
+      setSuccess(true);
+    }
   };
 
   const inputBase = {
@@ -119,18 +135,15 @@ export default function SignupPage() {
                 <CheckCircle2 className="w-10 h-10" style={{ color: '#34d399' }} />
               </div>
               <h2 className="text-2xl font-black text-white mb-2">Account Created!</h2>
-              <p className="text-sm text-slate-400">Taking you to your dashboard…</p>
-              <div className="mt-4 flex justify-center">
-                <div className="w-8 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
-                  <motion.div
-                    className="h-full rounded-full"
-                    style={{ background: 'linear-gradient(90deg, #A99BFF, #6B5CE7)' }}
-                    initial={{ width: '0%' }}
-                    animate={{ width: '100%' }}
-                    transition={{ duration: 1.4, ease: 'linear' }}
-                  />
-                </div>
-              </div>
+              <p className="text-sm text-slate-400">
+                Check your email and click the confirmation link to activate your account.
+              </p>
+              <p className="text-xs text-slate-600 mt-3">
+                Already confirmed?{' '}
+                <Link href="/connect" className="text-purple-400 hover:text-purple-300 transition-colors">
+                  Sign in →
+                </Link>
+              </p>
             </motion.div>
           ) : (
             /* ─ Form ─ */

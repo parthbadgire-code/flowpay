@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
 import { useWallet } from '@/hooks/useWallet';
+import { supabase } from '@/lib/supabase';
 
 export default function ConnectPage() {
   const router = useRouter();
@@ -23,8 +24,19 @@ export default function ConnectPage() {
     if (!isValid) return;
     setError('');
     setLoading(true);
-    // Simulate auth check — replace with real API call
-    await new Promise(r => setTimeout(r, 900));
+
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (authError) {
+      setError(authError.message);
+      setLoading(false);
+      return;
+    }
+
+    // Auth succeeded — also hydrate demo wallet state then redirect
     await tryDemo();
     router.push('/dashboard');
   };
