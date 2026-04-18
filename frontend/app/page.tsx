@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, Zap, Shield, QrCode, BarChart3 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
+import { useAuth } from '@/lib/AuthContext';
 import { useWallet } from '@/hooks/useWallet';
 import { CryptoPriceCard } from '@/components/ui/CryptoPriceCard';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
@@ -50,6 +51,7 @@ const cardGlass = {
 export default function LandingPage() {
   const router = useRouter();
   const { tryDemo } = useWallet();
+  const { user } = useAuth();
 
   const handleDemo = async () => {
     await tryDemo();
@@ -100,23 +102,39 @@ export default function LandingPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
             >
-              <ConnectButton.Custom>
-                {({ openConnectModal }) => (
-                  <button
-                    onClick={openConnectModal}
-                    id="hero-login"
-                    className="px-6 py-3 text-sm font-bold text-white rounded-full transition-all"
-                    style={{
-                      background: 'linear-gradient(135deg, #A99BFF 0%, #7C6EFF 60%, #6B5CE7 100%)',
-                      boxShadow: '0 4px 20px rgba(124,110,255,0.4)',
-                    }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 6px 28px rgba(124,110,255,0.6)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(124,110,255,0.4)'; (e.currentTarget as HTMLElement).style.transform = 'none'; }}
-                  >
-                    Connect Wallet
-                  </button>
-                )}
-              </ConnectButton.Custom>
+              {user ? (
+                <ConnectButton.Custom>
+                  {({ openConnectModal }) => (
+                    <button
+                      onClick={openConnectModal}
+                      id="hero-login"
+                      className="px-6 py-3 text-sm font-bold text-white rounded-full transition-all"
+                      style={{
+                        background: 'linear-gradient(135deg, #A99BFF 0%, #7C6EFF 60%, #6B5CE7 100%)',
+                        boxShadow: '0 4px 20px rgba(124,110,255,0.4)',
+                      }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 6px 28px rgba(124,110,255,0.6)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(124,110,255,0.4)'; (e.currentTarget as HTMLElement).style.transform = 'none'; }}
+                    >
+                      Connect Wallet
+                    </button>
+                  )}
+                </ConnectButton.Custom>
+              ) : (
+                <button
+                  onClick={() => router.push('/connect')}
+                  id="hero-login"
+                  className="px-6 py-3 text-sm font-bold text-white rounded-full transition-all"
+                  style={{
+                    background: 'linear-gradient(135deg, #A99BFF 0%, #7C6EFF 60%, #6B5CE7 100%)',
+                    boxShadow: '0 4px 20px rgba(124,110,255,0.4)',
+                  }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 6px 28px rgba(124,110,255,0.6)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(124,110,255,0.4)'; (e.currentTarget as HTMLElement).style.transform = 'none'; }}
+                >
+                  Connect Wallet
+                </button>
+              )}
               <button
                 onClick={handleDemo}
                 id="hero-try-demo"

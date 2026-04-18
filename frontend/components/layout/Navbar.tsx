@@ -7,11 +7,14 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWallet } from '@/hooks/useWallet';
 import { Button } from '@/components/ui';
+import { useAuth } from '@/lib/AuthContext';
+import { UserMenu } from '@/components/auth/UserMenu';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export function Navbar() {
   const pathname = usePathname();
   const { isConnected, isDemo, tryDemo } = useWallet();
+  const { user } = useAuth();
   const isLandingPage = pathname === '/';
 
   if (!isLandingPage && isConnected) return null; // dashboard uses sidebar
@@ -67,30 +70,45 @@ export function Navbar() {
 
         {/* Right Actions */}
         <div className="flex items-center gap-3">
-          {isConnected ? (
+          {user ? (
             <>
-              <button className="relative p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all hidden sm:block">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-primary-400 rounded-full" />
-              </button>
-              <ConnectButton 
-                showBalance={false}
-                chainStatus="icon"
-                accountStatus="avatar"
-              />
+              {isConnected ? (
+                <>
+                  <button className="relative p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all hidden sm:block">
+                    <Bell className="w-5 h-5" />
+                    <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-primary-400 rounded-full" />
+                  </button>
+                  <ConnectButton 
+                    showBalance={false}
+                    chainStatus="icon"
+                    accountStatus="avatar"
+                  />
+                  <UserMenu />
+                </>
+              ) : (
+                <div className="flex gap-2">
+                  <Button onClick={() => tryDemo()} variant="outline" size="sm" className="hidden sm:flex">
+                    Try Demo
+                  </Button>
+                  <ConnectButton.Custom>
+                    {({ openConnectModal }) => (
+                      <Button onClick={openConnectModal} variant="brand" size="sm" icon={<Wallet className="w-4 h-4" />}>
+                        Connect Wallet
+                      </Button>
+                    )}
+                  </ConnectButton.Custom>
+                  <UserMenu />
+                </div>
+              )}
             </>
           ) : (
             <div className="flex gap-2">
               <Button onClick={() => tryDemo()} variant="outline" size="sm" className="hidden sm:flex">
                 Try Demo
               </Button>
-              <ConnectButton.Custom>
-                {({ openConnectModal }) => (
-                  <Button onClick={openConnectModal} variant="brand" size="sm" icon={<Wallet className="w-4 h-4" />}>
-                    Connect Wallet
-                  </Button>
-                )}
-              </ConnectButton.Custom>
+              <Button onClick={() => window.location.href = '/connect'} variant="brand" size="sm" icon={<Wallet className="w-4 h-4" />}>
+                Connect Wallet
+              </Button>
             </div>
           )}
         </div>
