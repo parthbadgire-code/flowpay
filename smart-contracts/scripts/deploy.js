@@ -3,10 +3,10 @@ const fs = require("fs");
 const path = require("path");
 
 const SUBSCRIPTION_ID = "109875450105937948492512243849098070632142568475445286884777686620247923872012";
-const EXISTING_MINR = "0x397E424B964C3C3Fc421Be08c51920c5e6edc56C";
-const EXISTING_ORACLE = "0xa006157Ef5b45621f80c99B25Bd7B34122900000";
-const EXISTING_NFT = "0xC3f174b8328F9335B23005D0Ac17Fa479dd5A9F6";
-const EXISTING_CM = "0x879903a72dCA421511eAD285eeBF5623f10C337e";
+const EXISTING_MINR = "";
+const EXISTING_ORACLE = "";
+const EXISTING_NFT = "";
+const EXISTING_CM = "";
 const EXISTING_USDC = "";
 const EXISTING_MATIC = "";
 const EXISTING_ETH = "";
@@ -112,12 +112,12 @@ async function main() {
   }
 
   // 5b. Deploy RewardLottery
-  console.log("Deploying RewardLottery...");
-  const RewardLottery = await hre.ethers.getContractFactory("RewardLottery");
-  const lottery = await RewardLottery.deploy(SUBSCRIPTION_ID);
-  await lottery.waitForDeployment();
-  const lotteryAddress = await lottery.getAddress();
-  console.log("RewardLottery deployed to:", lotteryAddress);
+  // console.log("Deploying RewardLottery...");
+  // const RewardLottery = await hre.ethers.getContractFactory("RewardLottery");
+  // const lottery = await RewardLottery.deploy(SUBSCRIPTION_ID);
+  // await lottery.waitForDeployment();
+  // const lotteryAddress = await lottery.getAddress();
+  // console.log("RewardLottery deployed to:", lotteryAddress);
 
   // 6. Set Oracle Prices
   console.log("Setting Oracle Prices...");
@@ -148,7 +148,7 @@ async function main() {
     MockUSDC: mockUSDCAddress,
     MockMATIC: mockMATICAddress,
     MockETH: mockETHAddress,
-    RewardLottery: lotteryAddress
+    // RewardLottery: lotteryAddress
   };
 
   const contractsDir = path.join(__dirname, "..", "..", "frontend", "src", "contracts");

@@ -7,6 +7,7 @@ import { parseUnits } from 'viem';
 import { ADDRESSES } from '@/src/contracts/addresses';
 import mockErc20Artifact from '@/src/contracts/MockERC20.json';
 import mockNftArtifact from '@/src/contracts/MockNFT.json';
+import mInrArtifact from '@/src/contracts/MockINR.json';
 
 export function TestnetFaucet() {
   const { writeContractAsync } = useWriteContract();
@@ -56,6 +57,16 @@ export function TestnetFaucet() {
         abi: mockNftArtifact.abi,
         functionName: 'mint',
         args: [address, randomTokenId],
+      });
+      if (publicClient) await publicClient.waitForTransactionReceipt({ hash });
+      else await new Promise(r => setTimeout(r, 6000));
+
+      // 5. Mint 100000 MockINR so users can afford the origination fee penalty when repaying
+      hash = await writeContractAsync({
+        address: ADDRESSES.MockINR as `0x${string}`,
+        abi: mInrArtifact.abi,
+        functionName: 'mint',
+        args: [address, parseUnits('100000', 18)],
       });
       if (publicClient) await publicClient.waitForTransactionReceipt({ hash });
 
