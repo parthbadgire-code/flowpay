@@ -8,6 +8,8 @@ import { useCreditLine } from '@/hooks/useCreditLine';
 import { INR_PER_USD } from '@/types/creditLine';
 import { formatUnits } from 'viem';
 
+import { ADDRESSES } from '@/src/contracts/addresses';
+
 interface LoanPositionCardProps {
   loan: Position;
   onRepay: () => void;
@@ -21,11 +23,17 @@ export function LoanPositionCard({ loan, onRepay }: LoanPositionCardProps) {
       ? `₹${(usd * INR_PER_USD).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
       : `$${usd.toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
 
-  const collateralToken = loan.isNFT ? 'NFT' : 'MATIC';
+  const isUSDC = loan.collateralContract.toLowerCase() === ADDRESSES.MockUSDC.toLowerCase();
+  const isETH = loan.collateralContract.toLowerCase() === ADDRESSES.MockETH.toLowerCase();
+
+  const collateralToken = loan.isNFT ? 'NFT' : isUSDC ? 'USDC' : isETH ? 'ETH' : 'MATIC';
   const collateralAmountNum = Number(formatUnits(loan.collateralAmount, 18));
-  // Use mock MATIC price for now
-  const maticPrice = prices?.matic?.priceUSD || 0.8;
-  const collateralValueUSD = loan.isNFT ? 100 : collateralAmountNum * maticPrice;
+  
+  const tokenPrice = isUSDC ? (prices?.usdc?.priceUSD || 1.0) : 
+                     isETH ? (prices?.eth?.priceUSD || 3000.0) : 
+                     (prices?.matic?.priceUSD || 0.8);
+
+  const collateralValueUSD = loan.isNFT ? 100 : collateralAmountNum * tokenPrice;
   const borrowedAmountUSD = Number(formatUnits(loan.creditIssued, 18)) / INR_PER_USD;
   const ltv = collateralValueUSD > 0 ? borrowedAmountUSD / collateralValueUSD : 0;
   

@@ -22,6 +22,7 @@ export function LoanTable() {
   const tokenName = (addr: string) => {
     if(addr.toLowerCase() === ADDRESSES.MockMATIC.toLowerCase()) return 'MATIC';
     if(addr.toLowerCase() === ADDRESSES.MockUSDC.toLowerCase()) return 'USDC';
+    if(addr.toLowerCase() === ADDRESSES.MockETH.toLowerCase()) return 'ETH';
     return 'TOKEN';
   }
 
