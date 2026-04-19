@@ -3,7 +3,11 @@ const fs = require("fs");
 const path = require("path");
 
 const SUBSCRIPTION_ID = "109875450105937948492512243849098070632142568475445286884777686620247923872012";
+<<<<<<< HEAD
 const EXISTING_MINR = "";
+=======
+const EXISTING_MINR = ""; 
+>>>>>>> parth/ultimate
 const EXISTING_ORACLE = "";
 const EXISTING_NFT = "";
 const EXISTING_CM = "";
@@ -132,7 +136,7 @@ async function main() {
 
   // 8. Mint initial capital for testing
   console.log("Minting initial test tokens...");
-  await (await mINR.mint(deployer.address, hre.ethers.parseEther("1000000"))).wait();
+  // await (await mINR.mint(deployer.address, hre.ethers.parseEther("1000000"))).wait();
   await (await mockUSDC.mint(deployer.address, hre.ethers.parseEther("10000"))).wait();
   await (await mockMATIC.mint(deployer.address, hre.ethers.parseEther("5000"))).wait();
   await (await mockETH.mint(deployer.address, hre.ethers.parseEther("10"))).wait();
@@ -147,8 +151,12 @@ async function main() {
     MockNFT: mockNFTAddress,
     MockUSDC: mockUSDCAddress,
     MockMATIC: mockMATICAddress,
+<<<<<<< HEAD
     MockETH: mockETHAddress,
     // RewardLottery: lotteryAddress
+=======
+    MockETH: mockETHAddress
+>>>>>>> parth/ultimate
   };
 
   const contractsDir = path.join(__dirname, "..", "..", "frontend", "src", "contracts");

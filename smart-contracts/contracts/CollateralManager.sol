@@ -183,15 +183,11 @@ contract CollateralManager is Ownable, ReentrancyGuard {
         
         uint256 totalRepay = pos.creditIssued + interest;
 
-        // User must have approved totalRepay amount of mINR to us
-        // Burn the exact debt principal to remove it from system, but interest goes to treasury.
-        // Wait, instructions state: "Burn totalRepay mINR from msg.sender" and "Treasury balance increased by fee + interest"
-        // If we burn totalRepay, the treasury doesn't receive the interest.
-        // Let's mint the interest to the treasury and burn the totalRepay from the user. Or collect interest as transfer.
-        // To strictly match "Burn totalRepay mINR from msg.sender" AND "treasury balance increased by interest":
-        // We can just burn pos.creditIssued, and transfer interest to address(this).
-        // Let's do exact operations:
-        mINR.burn(msg.sender, pos.creditIssued); 
+        // User must have approved interest amount of mINR to us
+        // Burn the exact debt principal to remove it from system. Since originationFee
+        // was minted to the treasury, burn that from the treasury, and netCredit from the user.
+        mINR.burn(msg.sender, pos.creditIssued - pos.originationFee); 
+        mINR.burn(address(this), pos.originationFee); 
         if (interest > 0) {
             // Collect protocol interest directly into treasury
             IERC20(address(mINR)).transferFrom(msg.sender, address(this), interest);

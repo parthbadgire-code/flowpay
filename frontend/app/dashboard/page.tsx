@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui';
 
 // Credit components
 import { FlowPayWalletCard } from '@/components/credit/FlowPayWalletCard';
+import { CryptoAssetsCard } from '@/components/credit/CryptoAssetsCard';
 import { LoanTable } from '@/components/credit/LoanTable';
 import { TestnetFaucet } from '@/components/credit/TestnetFaucet';
 import { OpenPositionModal } from '@/components/credit/OpenPositionModal';
@@ -370,6 +371,8 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="space-y-5">
+                  <FlowPayWalletCard />
+                  <CryptoAssetsCard />
                   <div className="rounded-2xl p-5" style={cardBg}>
                     <PriceFeedCard />
                   </div>

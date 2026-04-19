@@ -10,7 +10,7 @@ import { formatUnits, parseUnits } from 'viem';
 interface RepayModalProps { isOpen: boolean; onClose: () => void; }
 
 export function RepayModal({ isOpen, onClose }: RepayModalProps) {
-  const { activeLoans, repayPosition, currency, isLoading } = useCreditLine();
+  const { activeLoans, repayPosition, currency, isLoading, walletBalanceINR } = useCreditLine();
   const [selectedLoan, setSelectedLoan] = useState<Position | null>(null);
   const [step, setStep] = useState<'select' | 'success'>('select');
 
@@ -74,6 +74,13 @@ export function RepayModal({ isOpen, onClose }: RepayModalProps) {
                     const debtUSD = Number(debtINR) / INR_PER_USD;
                     const isRepayingThis = isLoading && selectedLoan?.id === loan.id;
 
+                    const now = Math.floor(Date.now() / 1000);
+                    const daysElapsed = (BigInt(now) - loan.createdAt) / BigInt(86400);
+                    const interest = (loan.creditIssued * BigInt(6) * daysElapsed) / BigInt(365) / BigInt(100);
+                    const requiredINRMight = (loan.creditIssued - loan.originationFee) + interest;
+                    const requiredINRNum = Number(formatUnits(requiredINRMight, 18));
+                    const hasSufficient = walletBalanceINR >= requiredINRNum - 0.01; // small wiggle room for decimals
+
                     return (
                       <div key={loan.id.toString()} className="rounded-2xl p-4 border border-white/10 bg-white/5 flex flex-col gap-3">
                         <div className="flex justify-between items-start">
@@ -84,9 +91,10 @@ export function RepayModal({ isOpen, onClose }: RepayModalProps) {
                             </p>
                           </div>
                         </div>
+                        { !hasSufficient && <p className="text-[10px] text-red-400 mb-1">Insufficient FlowPay balance to repay</p> }
                         <button
                           onClick={() => handleRepay(loan)}
-                          disabled={isLoading}
+                          disabled={isLoading || !hasSufficient}
                           className="w-full py-2 rounded-xl text-xs font-black transition-all disabled:opacity-40"
                           style={{ background: 'rgba(52,211,153,0.15)', color: '#34D399', border: '1px solid rgba(52,211,153,0.3)' }}
                         >
