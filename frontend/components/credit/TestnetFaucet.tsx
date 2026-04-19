@@ -19,32 +19,32 @@ export function TestnetFaucet() {
     if (!address || isMinting) return;
     setIsMinting(true);
     try {
-      // 1. Mint 100 MATIC
+      // 1. Mint 10000 MATIC
       let hash = await writeContractAsync({
         address: ADDRESSES.MockMATIC as `0x${string}`,
         abi: mockErc20Artifact.abi,
         functionName: 'mint',
-        args: [address, parseUnits('100', 18)],
+        args: [address, parseUnits('10000', 18)],
       });
       if (publicClient) await publicClient.waitForTransactionReceipt({ hash });
       else await new Promise(r => setTimeout(r, 6000));
 
-      // 2. Mint 5000 USDC
+      // 2. Mint 10000 USDC
       hash = await writeContractAsync({
         address: ADDRESSES.MockUSDC as `0x${string}`,
         abi: mockErc20Artifact.abi,
         functionName: 'mint',
-        args: [address, parseUnits('5000', 18)],
+        args: [address, parseUnits('10000', 18)],
       });
       if (publicClient) await publicClient.waitForTransactionReceipt({ hash });
       else await new Promise(r => setTimeout(r, 6000));
 
-      // 3. Mint 10 ETH
+      // 3. Mint 100 ETH
       hash = await writeContractAsync({
         address: ADDRESSES.MockETH as `0x${string}`,
         abi: mockErc20Artifact.abi,
         functionName: 'mint',
-        args: [address, parseUnits('10', 18)],
+        args: [address, parseUnits('100', 18)],
       });
       if (publicClient) await publicClient.waitForTransactionReceipt({ hash });
       else await new Promise(r => setTimeout(r, 6000));
