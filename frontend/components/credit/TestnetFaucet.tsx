@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Database } from 'lucide-react';
-import { useWriteContract, useAccount } from 'wagmi';
+import { useWriteContract, useAccount, usePublicClient } from 'wagmi';
 import { parseUnits } from 'viem';
 import { ADDRESSES } from '@/src/contracts/addresses';
 import mockErc20Artifact from '@/src/contracts/MockERC20.json';
@@ -13,40 +13,53 @@ export function TestnetFaucet() {
   const { address } = useAccount();
   const [isMinting, setIsMinting] = useState(false);
 
+  const publicClient = usePublicClient();
+
   const mintTokens = async () => {
     if (!address || isMinting) return;
     setIsMinting(true);
     try {
-      // Mint 100 MATIC
-      await writeContractAsync({
+      // 1. Mint 10000 MATIC
+      let hash = await writeContractAsync({
         address: ADDRESSES.MockMATIC as `0x${string}`,
+        abi: mockErc20Artifact.abi,
+        functionName: 'mint',
+        args: [address, parseUnits('10000', 18)],
+      });
+      if (publicClient) await publicClient.waitForTransactionReceipt({ hash });
+      else await new Promise(r => setTimeout(r, 6000));
+
+      // 2. Mint 10000 USDC
+      hash = await writeContractAsync({
+        address: ADDRESSES.MockUSDC as `0x${string}`,
+        abi: mockErc20Artifact.abi,
+        functionName: 'mint',
+        args: [address, parseUnits('10000', 18)],
+      });
+      if (publicClient) await publicClient.waitForTransactionReceipt({ hash });
+      else await new Promise(r => setTimeout(r, 6000));
+
+      // 3. Mint 100 ETH
+      hash = await writeContractAsync({
+        address: ADDRESSES.MockETH as `0x${string}`,
         abi: mockErc20Artifact.abi,
         functionName: 'mint',
         args: [address, parseUnits('100', 18)],
       });
-      // Mint 5000 USDC
-      await writeContractAsync({
-        address: ADDRESSES.MockUSDC as `0x${string}`,
-        abi: mockErc20Artifact.abi,
-        functionName: 'mint',
-        args: [address, parseUnits('5000', 18)],
-      });
-      // Mint 10 ETH
-      await writeContractAsync({
-        address: ADDRESSES.MockETH as `0x${string}`,
-        abi: mockErc20Artifact.abi,
-        functionName: 'mint',
-        args: [address, parseUnits('10', 18)],
-      });
-      // Mint 1 NFT
+      if (publicClient) await publicClient.waitForTransactionReceipt({ hash });
+      else await new Promise(r => setTimeout(r, 6000));
+
+      // 4. Mint 1 NFT
       const randomTokenId = BigInt(Math.floor(Math.random() * 1000000));
-      await writeContractAsync({
+      hash = await writeContractAsync({
         address: ADDRESSES.MockNFT as `0x${string}`,
         abi: mockNftArtifact.abi,
         functionName: 'mint',
         args: [address, randomTokenId],
       });
-      alert('Mock Tokens & NFT Minted! Wait 10 seconds for block execution.');
+      if (publicClient) await publicClient.waitForTransactionReceipt({ hash });
+
+      alert('Mock Tokens & NFT Minted Successfully!');
     } catch (e) {
       console.error(e);
     } finally {
