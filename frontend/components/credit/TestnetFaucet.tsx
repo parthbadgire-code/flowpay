@@ -20,7 +20,8 @@ export function TestnetFaucet() {
     if (!address || isMinting) return;
     setIsMinting(true);
     try {
-      // 1. Mint 10000 MATIC
+      // 1. Mint 10000 MATIC (COMMENTED OUT)
+      /*
       let hash = await writeContractAsync({
         address: ADDRESSES.MockMATIC as `0x${string}`,
         abi: mockErc20Artifact.abi,
@@ -29,9 +30,10 @@ export function TestnetFaucet() {
       });
       if (publicClient) await publicClient.waitForTransactionReceipt({ hash });
       else await new Promise(r => setTimeout(r, 6000));
+      */
 
       // 2. Mint 10000 USDC
-      hash = await writeContractAsync({
+      let hash = await writeContractAsync({
         address: ADDRESSES.MockUSDC as `0x${string}`,
         abi: mockErc20Artifact.abi,
         functionName: 'mint',
@@ -40,7 +42,8 @@ export function TestnetFaucet() {
       if (publicClient) await publicClient.waitForTransactionReceipt({ hash });
       else await new Promise(r => setTimeout(r, 6000));
 
-      // 3. Mint 100 ETH
+      // 3. Mint 100 ETH (COMMENTED OUT)
+      /*
       hash = await writeContractAsync({
         address: ADDRESSES.MockETH as `0x${string}`,
         abi: mockErc20Artifact.abi,
@@ -49,8 +52,10 @@ export function TestnetFaucet() {
       });
       if (publicClient) await publicClient.waitForTransactionReceipt({ hash });
       else await new Promise(r => setTimeout(r, 6000));
+      */
 
-      // 4. Mint 1 NFT
+      // 4. Mint 1 NFT (COMMENTED OUT)
+      /*
       const randomTokenId = BigInt(Math.floor(Math.random() * 1000000));
       hash = await writeContractAsync({
         address: ADDRESSES.MockNFT as `0x${string}`,
@@ -60,8 +65,10 @@ export function TestnetFaucet() {
       });
       if (publicClient) await publicClient.waitForTransactionReceipt({ hash });
       else await new Promise(r => setTimeout(r, 6000));
+      */
 
-      // 5. Mint 100000 MockINR so users can afford the origination fee penalty when repaying
+      // 5. Mint 100000 MockINR (COMMENTED OUT)
+      /*
       hash = await writeContractAsync({
         address: ADDRESSES.MockINR as `0x${string}`,
         abi: mInrArtifact.abi,
@@ -69,10 +76,11 @@ export function TestnetFaucet() {
         args: [address, parseUnits('100000', 18)],
       });
       if (publicClient) await publicClient.waitForTransactionReceipt({ hash });
+      */
 
-      alert('Mock Tokens & NFT Minted Successfully!');
+      alert('Mock Tokens Minted Successfully!');
     } catch (e) {
-      console.error(e);
+      console.error(e); 
     } finally {
       setIsMinting(false);
     }
