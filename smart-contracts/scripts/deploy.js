@@ -2,10 +2,10 @@ const hre = require("hardhat");
 const fs = require("fs");
 const path = require("path");
 
-const EXISTING_MINR = "0x397E424B964C3C3Fc421Be08c51920c5e6edc56C"; 
-const EXISTING_ORACLE = "0xa006157Ef5b45621f80c99B25Bd7B34122900000";
-const EXISTING_NFT = "0xC3f174b8328F9335B23005D0Ac17Fa479dd5A9F6";
-const EXISTING_CM = "0x879903a72dCA421511eAD285eeBF5623f10C337e";
+const EXISTING_MINR = ""; 
+const EXISTING_ORACLE = "";
+const EXISTING_NFT = "";
+const EXISTING_CM = "";
 const EXISTING_USDC = "";
 const EXISTING_MATIC = "";
 const EXISTING_ETH = "";
