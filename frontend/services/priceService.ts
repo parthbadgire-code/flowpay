@@ -13,13 +13,15 @@ export interface TokenPrice {
 
 const MOCK_PRICES: TokenPrice[] = [
   { symbol: 'USDC', inrPrice: 83.5,    usdPrice: 1.00,     change24h: 0.01 },
-  { symbol: 'MATIC', inrPrice: 0.86,   usdPrice: 0.0103,   change24h: -2.3 },
+  { symbol: 'MATIC', inrPrice: 68.0,   usdPrice: 0.81,     change24h: -2.3 },
   { symbol: 'ETH',   inrPrice: 271820, usdPrice: 3256.0,   change24h: 1.8  },
+  { symbol: 'BTC',   inrPrice: 5500000,usdPrice: 66000.0,  change24h: 2.1  },
+  { symbol: 'SOL',   inrPrice: 12000,  usdPrice: 145.0,    change24h: 5.4  },
 ];
 
 export async function fetchTokenPrices(): Promise<TokenPrice[]> {
   try {
-    const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=usd-coin,matic-network,ethereum&vs_currencies=usd,inr&include_24hr_change=true');
+    const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=usd-coin,matic-network,ethereum,bitcoin,solana&vs_currencies=usd,inr&include_24hr_change=true');
     if (!res.ok) throw new Error("HTTP error");
     const data = await res.json();
     
@@ -41,6 +43,18 @@ export async function fetchTokenPrices(): Promise<TokenPrice[]> {
         inrPrice: data['ethereum']?.inr || 250000,
         usdPrice: data['ethereum']?.usd || 3000,
         change24h: data['ethereum']?.usd_24h_change || 0,
+      },
+      {
+        symbol: 'BTC',
+        inrPrice: data['bitcoin']?.inr || 5500000,
+        usdPrice: data['bitcoin']?.usd || 66000,
+        change24h: data['bitcoin']?.usd_24h_change || 0,
+      },
+      {
+        symbol: 'SOL',
+        inrPrice: data['solana']?.inr || 12000,
+        usdPrice: data['solana']?.usd || 145,
+        change24h: data['solana']?.usd_24h_change || 0,
       }
     ];
   } catch (e) {

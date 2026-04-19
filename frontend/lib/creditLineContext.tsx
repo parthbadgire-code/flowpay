@@ -155,10 +155,30 @@ export function CreditLineProvider({ children }: { children: React.ReactNode }) 
   // Calculate generic derived states strictly from blockchain array
   const totalCollateralUSD = useMemo(() => {
     let sum = 0;
-    const maticPrice = liveData?.find(t => t.symbol === 'MATIC')?.usdPrice || 0.8;
+    
+    const getSymbolForAddress = (addr: string) => {
+      const norm = addr.toLowerCase();
+      if (norm === ADDRESSES.MockMATIC.toLowerCase()) return 'MATIC';
+      if (norm === ADDRESSES.MockUSDC.toLowerCase()) return 'USDC';
+      if (norm === ADDRESSES.MockETH.toLowerCase()) return 'ETH';
+      return 'UNKNOWN';
+    };
+
     loans.filter(l => l.active && !l.isNFT).forEach(l => {
       const amt = Number(formatUnits(l.collateralAmount, 18));
-      sum += amt * maticPrice;
+      const symbol = getSymbolForAddress(l.collateralContract);
+      
+      let price = 0;
+      const livePrice = liveData?.find(t => t.symbol === symbol)?.usdPrice;
+      if (livePrice) {
+        price = livePrice;
+      } else {
+        if (symbol === 'MATIC') price = 0.8;
+        else if (symbol === 'USDC') price = 1.0;
+        else if (symbol === 'ETH') price = 3100.0;
+      }
+      
+      sum += amt * price;
     });
     return sum;
   }, [loans, liveData]);

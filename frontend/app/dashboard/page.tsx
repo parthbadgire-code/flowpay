@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui';
 // Credit components
 import { FlowPayWalletCard } from '@/components/credit/FlowPayWalletCard';
 import { CryptoAssetsCard } from '@/components/credit/CryptoAssetsCard';
+import { TransactionHistoryCard } from '@/components/credit/TransactionHistoryCard';
 import { LoanTable } from '@/components/credit/LoanTable';
 import { TestnetFaucet } from '@/components/credit/TestnetFaucet';
 import { OpenPositionModal } from '@/components/credit/OpenPositionModal';
@@ -366,6 +367,13 @@ export default function DashboardPage() {
                     </p>
                     <div className="rounded-2xl p-5" style={cardBg}>
                       <BorrowingSimulator />
+                    </div>
+                  </div>
+
+                  {/* Transaction History Subgraph */}
+                  <div>
+                    <div className="rounded-2xl p-5" style={cardBg}>
+                      <TransactionHistoryCard />
                     </div>
                   </div>
                 </div>
