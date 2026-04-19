@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, TrendingUp, CheckCircle } from 'lucide-react';
+import { X, TrendingUp, CheckCircle, Wallet, ArrowRight } from 'lucide-react';
 import { useCreditLine } from '@/hooks/useCreditLine';
 import { INR_PER_USD } from '@/types/creditLine';
 
@@ -14,22 +14,18 @@ interface BorrowModalProps {
 export function BorrowModal({ isOpen, onClose }: BorrowModalProps) {
   const { borrow, availableCreditUSD, safeBorrowUSD, totalCollateralUSD, simulateBorrow, currency, isLoading } = useCreditLine();
   const [amountUSD, setAmountUSD] = useState('');
-  const [outputCurrency, setOutputCurrency] = useState<'USDC' | 'INR'>('USDC');
   const [step, setStep] = useState<'form' | 'success'>('form');
 
   const amt = parseFloat(amountUSD || '0');
   const sim = simulateBorrow(amt);
-  const hfColor = sim.riskLevel === 'safe' ? '#34D399' : sim.riskLevel === 'moderate' ? '#FBBF24' : '#F87171';
-
-  const displayOutput = outputCurrency === 'INR'
-    ? `₹${(amt * INR_PER_USD).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
-    : `${amt.toFixed(2)} USDC`;
+  const creditedINR = amt * INR_PER_USD;
+  const hfColor = sim.riskLevel === 'safe' ? '#00FF87' : sim.riskLevel === 'moderate' ? '#FFA858' : '#FF5E5E';
 
   const handleBorrow = async () => {
     if (!amt || amt <= 0 || amt > availableCreditUSD) return;
-    await borrow({ amountUSD: amt, currency: outputCurrency });
+    await borrow({ amountUSD: amt, currency: 'INR' });
     setStep('success');
-    setTimeout(() => { setStep('form'); setAmountUSD(''); onClose(); }, 2000);
+    setTimeout(() => { setStep('form'); setAmountUSD(''); onClose(); }, 2500);
   };
 
   if (!isOpen) return null;
@@ -48,11 +44,17 @@ export function BorrowModal({ isOpen, onClose }: BorrowModalProps) {
         <AnimatePresence mode="wait">
           {step === 'success' ? (
             <motion.div key="success" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-8">
-              <div className="w-16 h-16 rounded-2xl bg-blue-500/20 flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-8 h-8 text-blue-400" />
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
+                style={{ background: 'rgba(0,212,170,0.15)', border: '1px solid rgba(0,212,170,0.3)' }}>
+                <Wallet className="w-8 h-8" style={{ color: '#00D4AA' }} />
               </div>
-              <p className="text-xl font-black text-white mb-2">Loan Disbursed!</p>
-              <p className="text-slate-400 text-sm">{displayOutput} sent to your wallet</p>
+              <p className="text-xl font-black text-white mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Funds Credited!</p>
+              <p className="text-slate-400 text-sm mb-1">
+                <span className="font-bold" style={{ color: '#00D4AA' }}>
+                  ₹{(amt * INR_PER_USD).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                </span>{' '}added to your FlowPay wallet
+              </p>
+              <p className="text-slate-600 text-xs">You can now spend it via QR payments</p>
             </motion.div>
           ) : (
             <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -71,27 +73,34 @@ export function BorrowModal({ isOpen, onClose }: BorrowModalProps) {
               </div>
 
               {/* Available credit */}
-              <div className="rounded-2xl p-4 mb-5 text-center" style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)' }}>
-                <p className="text-xs text-slate-500 mb-1">Available to Borrow</p>
-                <p className="text-2xl font-black text-white">
-                  {currency === 'INR' ? `₹${(availableCreditUSD * INR_PER_USD).toLocaleString('en-IN', { maximumFractionDigits: 0 })}` : `$${availableCreditUSD.toFixed(2)}`}
-                </p>
-                <p className="text-xs text-emerald-400 mt-1">Safe limit: ${safeBorrowUSD.toFixed(2)}</p>
+              <div className="rounded-2xl p-4 mb-5" style={{ background: 'rgba(0,212,170,0.06)', border: '1px solid rgba(0,212,170,0.2)' }}>
+                <div className="flex justify-between items-end">
+                  <div>
+                    <p className="text-xs text-slate-500 mb-1">Available to Borrow</p>
+                    <p className="text-2xl font-black text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                      {currency === 'INR' ? `₹${(availableCreditUSD * INR_PER_USD).toLocaleString('en-IN', { maximumFractionDigits: 0 })}` : `$${availableCreditUSD.toFixed(2)}`}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-slate-500">Safe limit</p>
+                    <p className="text-sm font-bold" style={{ color: '#00FF87' }}>${safeBorrowUSD.toFixed(2)}</p>
+                  </div>
+                </div>
               </div>
 
-              {/* Output currency */}
-              <div className="flex gap-2 mb-4">
-                {(['USDC', 'INR'] as const).map(c => (
-                  <button key={c} onClick={() => setOutputCurrency(c)}
-                    className="flex-1 py-2 rounded-xl text-sm font-bold transition-all"
-                    style={{
-                      background: outputCurrency === c ? 'rgba(59,130,246,0.2)' : 'rgba(255,255,255,0.03)',
-                      border: `1px solid ${outputCurrency === c ? 'rgba(59,130,246,0.5)' : 'rgba(255,255,255,0.08)'}`,
-                      color: outputCurrency === c ? '#60A5FA' : '#64748B',
-                    }}>
-                    {c === 'USDC' ? '💵 USDC' : '🇮🇳 INR'}
-                  </button>
-                ))}
+              {/* Wallet credit callout */}
+              <div className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 mb-5"
+                style={{ background: 'rgba(0,212,170,0.06)', border: '1px solid rgba(0,212,170,0.15)' }}>
+                <Wallet className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#00D4AA' }} />
+                <p className="text-xs text-slate-400">
+                  Funds credited to your{' '}
+                  <span className="font-bold" style={{ color: '#00D4AA' }}>FlowPay Wallet in INR</span>
+                  {amt > 0 && (
+                    <span style={{ color: '#00FF87' }}>
+                      {' '}(+₹{(amt * INR_PER_USD).toLocaleString('en-IN', { maximumFractionDigits: 0 })})
+                    </span>
+                  )}
+                </p>
               </div>
 
               {/* Amount input (always in USD internally) */}
@@ -114,8 +123,10 @@ export function BorrowModal({ isOpen, onClose }: BorrowModalProps) {
                     }}
                   />
                 </div>
-                {amt > 0 && outputCurrency === 'INR' && (
-                  <p className="text-xs text-slate-500 mt-2">You receive ≈ ₹{(amt * INR_PER_USD).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</p>
+                {amt > 0 && (
+                  <p className="text-xs text-slate-500 mt-2">
+                    ≈ ₹{(amt * INR_PER_USD).toLocaleString('en-IN', { maximumFractionDigits: 0 })} credited to wallet
+                  </p>
                 )}
               </div>
 

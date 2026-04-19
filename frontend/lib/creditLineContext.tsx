@@ -15,15 +15,19 @@ import { mockLoans, mockPriceFeeds, mockCreditTransactions, CreditTransaction } 
 
 interface CreditLineContextType extends CreditLineState {
   transactions: CreditTransaction[];
+  walletBalanceINR: number;
   // Actions
   depositCollateral: (params: DepositParams) => Promise<void>;
   borrow: (params: BorrowParams) => Promise<void>;
   repay: (params: RepayParams) => Promise<void>;
   withdraw: (params: WithdrawParams) => Promise<void>;
-  mintLoanNFT: (loanId: string) => Promise<void>;
   setCurrency: (currency: CurrencyDisplay) => void;
   simulateBorrow: (amountUSD: number) => BorrowSimulation;
-  fmt: (usd: number) => string;   // formats to current currency
+  fmt: (usd: number) => string;
+  // Derived
+  activeLoans: LoanPosition[];
+  safeBorrowUSD: number;
+  isAtRisk: boolean;
 }
 
 const CreditLineContext = createContext<CreditLineContextType | null>(null);
@@ -60,6 +64,8 @@ export function CreditLineProvider({ children }: { children: React.ReactNode }) 
   const [prices] = useState(mockPriceFeeds);
   const [currency, setCurrencyState] = useState<CurrencyDisplay>('USD');
   const [isLoading, setIsLoading] = useState(false);
+  // FlowPay wallet INR balance — funded by borrow actions
+  const [walletBalanceINR, setWalletBalanceINR] = useState<number>(1300 * INR_PER_USD); // pre-seeded from existing loans
 
   // ── Computed Values ──
 
@@ -179,6 +185,10 @@ export function CreditLineProvider({ children }: { children: React.ReactNode }) 
     if (amountUSD > availableCreditUSD) throw new Error('Exceeds borrow limit');
     setBorrowed(prev => ({ usdc: prev.usdc + amountUSD }));
 
+    // ── Credit the user's FlowPay wallet in INR ──
+    const creditINR = parseFloat((amountUSD * INR_PER_USD).toFixed(2));
+    setWalletBalanceINR(prev => prev + creditINR);
+
     const activeLoan = loans.find(l => l.status === 'active');
     const loanId = activeLoan?.loanId ?? 'LOAN-UNKNOWN';
     setLoans(prev => prev.map(l =>
@@ -254,17 +264,12 @@ export function CreditLineProvider({ children }: { children: React.ReactNode }) 
     setIsLoading(false);
   }, [prices]);
 
-  const mintLoanNFT = useCallback(async (loanId: string) => {
-    setIsLoading(true);
-    await new Promise(r => setTimeout(r, 2000));
-    const nftId = `NFT-${Date.now()}`;
-    setLoans(prev => prev.map(l =>
-      l.loanId === loanId ? { ...l, nftTokenId: nftId } : l
-    ));
-    setIsLoading(false);
-  }, []);
-
   const setCurrency = useCallback((c: CurrencyDisplay) => setCurrencyState(c), []);
+
+  // ── Derived helpers exposed on context (avoids needing a separate hook) ──
+  const activeLoans = loans.filter(l => l.status === 'active');
+  const safeBorrowUSD = Math.min(availableCreditUSD, availableCreditUSD * 0.7);
+  const isAtRisk = healthFactor < 1.5 && healthFactor !== 999;
 
   const value: CreditLineContextType = useMemo(() => ({
     collateral,
@@ -282,19 +287,23 @@ export function CreditLineProvider({ children }: { children: React.ReactNode }) 
     currency,
     isLoading,
     transactions,
+    walletBalanceINR,
+    activeLoans,
+    safeBorrowUSD,
+    isAtRisk,
     depositCollateral,
     borrow,
     repay,
     withdraw,
-    mintLoanNFT,
     setCurrency,
     simulateBorrow,
     fmt,
   }), [
     collateral, borrowed, loans, prices, totalCollateralUSD, totalBorrowedUSD,
     availableCreditUSD, maxBorrowUSD, healthFactor, liquidationPrice, riskLevel,
-    collateralRatio, currency, isLoading, transactions,
-    depositCollateral, borrow, repay, withdraw, mintLoanNFT, setCurrency,
+    collateralRatio, currency, isLoading, transactions, walletBalanceINR,
+    activeLoans, safeBorrowUSD, isAtRisk,
+    depositCollateral, borrow, repay, withdraw, setCurrency,
     simulateBorrow, fmt,
   ]);
 

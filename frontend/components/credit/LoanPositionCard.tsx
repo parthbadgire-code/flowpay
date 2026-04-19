@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, AlertTriangle, CheckCircle, ExternalLink } from 'lucide-react';
+import { Shield, CheckCircle, Wallet } from 'lucide-react';
 import { LoanPosition } from '@/types/creditLine';
 import { Badge } from '@/components/ui';
 import { useCreditLine } from '@/hooks/useCreditLine';
@@ -10,13 +9,11 @@ import { INR_PER_USD } from '@/types/creditLine';
 
 interface LoanPositionCardProps {
   loan: LoanPosition;
-  onMintNFT: (loanId: string) => void;
   onRepay: () => void;
 }
 
-export function LoanPositionCard({ loan, onMintNFT, onRepay }: LoanPositionCardProps) {
-  const { currency, prices, isLoading } = useCreditLine();
-  const [minting, setMinting] = useState(false);
+export function LoanPositionCard({ loan, onRepay }: LoanPositionCardProps) {
+  const { currency, prices } = useCreditLine();
 
   const fmt = (usd: number) =>
     currency === 'INR'
@@ -24,20 +21,11 @@ export function LoanPositionCard({ loan, onMintNFT, onRepay }: LoanPositionCardP
       : `$${usd.toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
 
   const ltvPct = (loan.ltv * 100).toFixed(1);
-  const ltvColor = loan.ltv < 0.35 ? '#34D399' : loan.ltv < 0.6 ? '#FBBF24' : '#F87171';
-  const statusColor = loan.status === 'active' ? '#34D399' : loan.status === 'repaid' ? '#60A5FA' : '#F87171';
+  const ltvColor = loan.ltv < 0.35 ? '#00FF87' : loan.ltv < 0.6 ? '#FFA858' : '#FF5E5E';
   const tokenColor = loan.collateralToken === 'ETH' ? '#627EEA' : '#2775CA';
   const tokenIcon = loan.collateralToken === 'ETH' ? '⟠' : '💵';
-
-  const hf = loan.borrowedAmountUSD > 0
-    ? (loan.collateralValueUSD * 0.75) / loan.borrowedAmountUSD
-    : 999;
-
-  const handleMint = async () => {
-    setMinting(true);
-    await onMintNFT(loan.loanId);
-    setMinting(false);
-  };
+  // INR value of what was borrowed against this loan
+  const borrowedINR = loan.borrowedAmountUSD * INR_PER_USD;
 
   return (
     <motion.div
@@ -47,7 +35,7 @@ export function LoanPositionCard({ loan, onMintNFT, onRepay }: LoanPositionCardP
       style={{
         background: 'rgba(14,22,19,0.92)',
         border: `1px solid ${tokenColor}22`,
-        boxShadow: `0 4px 24px rgba(0,0,0,0.3)`,
+        boxShadow: `0 4px 24px rgba(0,0,0,0.25)`,
       }}
     >
       {/* Background glow */}
@@ -79,7 +67,7 @@ export function LoanPositionCard({ loan, onMintNFT, onRepay }: LoanPositionCardP
           { label: 'Current LTV', value: `${ltvPct}%`, color: ltvColor },
           { label: 'Liq. Price', value: loan.liquidationPriceUSD > 0 ? fmt(loan.liquidationPriceUSD) : '—', sub: loan.collateralToken === 'ETH' ? 'ETH/USD' : '—' },
         ].map(stat => (
-          <div key={stat.label} className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)' }}>
+          <div key={stat.label} className="rounded-xl p-3" style={{ background: 'rgba(0,212,170,0.04)', border: '1px solid rgba(0,212,170,0.08)' }}>
             <p className="text-xs text-slate-500 mb-1">{stat.label}</p>
             <p className="text-sm font-bold" style={{ color: stat.color ?? '#fff' }}>{stat.value}</p>
             {stat.sub && <p className="text-xs text-slate-600">{stat.sub}</p>}
@@ -87,9 +75,23 @@ export function LoanPositionCard({ loan, onMintNFT, onRepay }: LoanPositionCardP
         ))}
       </div>
 
+      {/* INR wallet credit callout */}
+      {loan.borrowedAmountUSD > 0 && (
+        <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl"
+          style={{ background: 'rgba(0,212,170,0.06)', border: '1px solid rgba(0,212,170,0.15)' }}>
+          <Wallet className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#00D4AA' }} />
+          <p className="text-xs text-slate-400">
+            <span style={{ color: '#00D4AA' }} className="font-bold">
+              ₹{borrowedINR.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+            </span>{' '}
+            credited to your FlowPay wallet
+          </p>
+        </div>
+      )}
+
       {/* LTV bar */}
       <div className="mb-4">
-        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(0,212,170,0.08)' }}>
           <motion.div
             className="h-full rounded-full"
             style={{ background: ltvColor }}
@@ -107,6 +109,7 @@ export function LoanPositionCard({ loan, onMintNFT, onRepay }: LoanPositionCardP
 
       {/* Actions */}
       {loan.status === 'active' && (
+<<<<<<< Updated upstream
         <div className="flex gap-2">
           <button
             onClick={onRepay}
@@ -131,12 +134,26 @@ export function LoanPositionCard({ loan, onMintNFT, onRepay }: LoanPositionCardP
             </div>
           )}
         </div>
+=======
+        <button
+          onClick={onRepay}
+          className="w-full py-2 rounded-xl text-xs font-bold transition-all hover:opacity-90"
+          style={{
+            border: '1px solid rgba(0,212,170,0.3)',
+            color: '#00D4AA',
+            background: 'rgba(0,212,170,0.07)',
+            fontFamily: "'Space Grotesk', sans-serif",
+          }}
+        >
+          Repay Loan →
+        </button>
+>>>>>>> Stashed changes
       )}
 
       {loan.status === 'repaid' && (
         <div className="flex items-center gap-2 text-xs text-slate-500">
-          <CheckCircle className="w-3 h-3 text-emerald-400" />
-          Full repaid · {new Date(loan.createdAt).toLocaleDateString()}
+          <CheckCircle className="w-3 h-3" style={{ color: '#00FF87' }} />
+          Fully repaid · {new Date(loan.createdAt).toLocaleDateString()}
         </div>
       )}
     </motion.div>

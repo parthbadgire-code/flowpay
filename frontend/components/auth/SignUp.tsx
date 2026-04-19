@@ -22,13 +22,24 @@ function PasswordStrength({ password }: { password: string }) {
       animate={{ opacity: 1, height: 'auto' }}
       className="mt-2 space-y-1.5"
     >
-      {checks.map(c => (
+      {checks.map((c) => (
         <div key={c.label} className="flex items-center gap-2">
-          {c.pass
-            ? <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#34d399' }} />
-            : <XCircle className="w-3.5 h-3.5 flex-shrink-0 text-slate-600" />
-          }
-          <span className={`text-xs ${c.pass ? 'text-emerald-400' : 'text-slate-600'}`}>{c.label}</span>
+          {c.pass ? (
+            <CheckCircle2
+              className="w-3.5 h-3.5 flex-shrink-0"
+              style={{ color: '#34d399' }}
+            />
+          ) : (
+            <XCircle className="w-3.5 h-3.5 flex-shrink-0 text-slate-600" />
+          )}
+
+          <span
+            className={`text-xs ${
+              c.pass ? 'text-emerald-400' : 'text-slate-600'
+            }`}
+          >
+            {c.label}
+          </span>
         </div>
       ))}
     </motion.div>
@@ -37,25 +48,36 @@ function PasswordStrength({ password }: { password: string }) {
 
 export function SignUp() {
   const router = useRouter();
-  const [form, setForm] = useState({ email: '', password: '', confirm: '' });
+  const [form, setForm] = useState({
+    email: '',
+    password: '',
+    confirm: '',
+  });
   const [showPw, setShowPw] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm(prev => ({ ...prev, [k]: e.target.value }));
+  const set =
+    (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
+      setForm((prev) => ({ ...prev, [k]: e.target.value }));
 
-  const passwordsMatch = form.password && form.confirm && form.password === form.confirm;
-  const isValid = form.email.includes('@') && form.password.length >= 8 && passwordsMatch;
+  const passwordsMatch =
+    form.password && form.confirm && form.password === form.confirm;
+
+  const isValid =
+    form.email.includes('@') &&
+    form.password.length >= 8 &&
+    passwordsMatch;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValid) return;
+
     setError('');
     setLoading(true);
-    
+
     const { error: authError } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
@@ -69,7 +91,7 @@ export function SignUp() {
 
     setLoading(false);
     setSuccess(true);
-    // Small celebration pause then redirect to dashboard
+
     setTimeout(() => {
       router.push('/dashboard');
     }, 1500);
@@ -89,11 +111,17 @@ export function SignUp() {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.1 }}
         className="w-full max-w-sm relative z-10"
-        style={{ background: 'rgba(22, 20, 42, 0.9)', border: '1px solid rgba(0,212,170,0.15)', borderRadius: '1.5rem', padding: '2rem', boxShadow: '0 16px 60px rgba(0,0,0,0.6)', backdropFilter: 'blur(24px)' }}
+        style={{
+          background: 'rgba(22, 20, 42, 0.9)',
+          border: '1px solid rgba(0,212,170,0.15)',
+          borderRadius: '1.5rem',
+          padding: '2rem',
+          boxShadow: '0 16px 60px rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(24px)',
+        }}
       >
         <AnimatePresence mode="wait">
           {success ? (
-            /* ─ Success state ─ */
             <motion.div
               key="success"
               initial={{ opacity: 0, scale: 0.9 }}
@@ -102,17 +130,37 @@ export function SignUp() {
             >
               <div
                 className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5"
-                style={{ background: 'linear-gradient(135deg, rgba(52,211,153,0.2), rgba(16,185,129,0.1))', border: '2px solid rgba(52,211,153,0.4)' }}
+                style={{
+                  background:
+                    'linear-gradient(135deg, rgba(0,212,170,0.2), rgba(0,156,122,0.1))',
+                  border: '2px solid rgba(0,212,170,0.4)',
+                }}
               >
-                <CheckCircle2 className="w-10 h-10" style={{ color: '#34d399' }} />
+                <CheckCircle2
+                  className="w-10 h-10"
+                  style={{ color: '#00D4AA' }}
+                />
               </div>
-              <h2 className="text-2xl font-black text-white mb-2">Account Created!</h2>
-              <p className="text-sm text-slate-400">Taking you to your dashboard…</p>
+
+              <h2 className="text-2xl font-black text-white mb-2">
+                Account Created!
+              </h2>
+
+              <p className="text-sm text-slate-400">
+                Taking you to your dashboard…
+              </p>
+
               <div className="mt-4 flex justify-center">
-                <div className="w-8 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
+                <div
+                  className="w-8 h-1 rounded-full overflow-hidden"
+                  style={{ background: 'rgba(255,255,255,0.1)' }}
+                >
                   <motion.div
                     className="h-full rounded-full"
-                    style={{ background: 'linear-gradient(90deg, #00D4AA, #009C7A)' }}
+                    style={{
+                      background:
+                        'linear-gradient(90deg, #00D4AA, #009C7A)',
+                    }}
                     initial={{ width: '0%' }}
                     animate={{ width: '100%' }}
                     transition={{ duration: 1.4, ease: 'linear' }}
@@ -121,20 +169,27 @@ export function SignUp() {
               </div>
             </motion.div>
           ) : (
-            /* ─ Form ─ */
             <motion.form
               key="form"
               onSubmit={handleSubmit}
               initial={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <h1 className="text-2xl font-black text-white text-center mb-1">Create your account</h1>
-              <p className="text-sm text-slate-400 text-center mb-7">Join FlowPay and unify your crypto</p>
+              <h1 className="text-2xl font-black text-white text-center mb-1">
+                Create your account
+              </h1>
+
+              <p className="text-sm text-slate-400 text-center mb-7">
+                Join FlowPay and unify your crypto
+              </p>
 
               <div className="space-y-3 mb-5">
                 {/* Email */}
                 <div>
-                  <label className="block text-xs font-medium text-slate-500 mb-1.5 ml-1">Email</label>
+                  <label className="block text-xs font-medium text-slate-500 mb-1.5 ml-1">
+                    Email
+                  </label>
+
                   <input
                     type="email"
                     required
@@ -143,14 +198,21 @@ export function SignUp() {
                     placeholder="you@example.com"
                     className="w-full py-3 px-4 text-sm placeholder-slate-600 outline-none transition-all"
                     style={inputBase}
-                    onFocus={(e) => { e.target.style.borderColor = 'rgba(0,212,170,0.5)'; }}
-                    onBlur={(e) => { e.target.style.borderColor = 'rgba(0,212,170,0.18)'; }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = 'rgba(0,212,170,0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = 'rgba(0,212,170,0.18)';
+                    }}
                   />
                 </div>
 
                 {/* Password */}
                 <div>
-                  <label className="block text-xs font-medium text-slate-500 mb-1.5 ml-1">Password</label>
+                  <label className="block text-xs font-medium text-slate-500 mb-1.5 ml-1">
+                    Password
+                  </label>
+
                   <div className="relative">
                     <input
                       type={showPw ? 'text' : 'password'}
@@ -160,23 +222,36 @@ export function SignUp() {
                       placeholder="Create a password"
                       className="w-full py-3 px-4 pr-11 text-sm placeholder-slate-600 outline-none transition-all"
                       style={inputBase}
-                      onFocus={(e) => { e.target.style.borderColor = 'rgba(0,212,170,0.5)'; }}
-                      onBlur={(e) => { e.target.style.borderColor = 'rgba(0,212,170,0.18)'; }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = 'rgba(0,212,170,0.5)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = 'rgba(0,212,170,0.18)';
+                      }}
                     />
+
                     <button
                       type="button"
-                      onClick={() => setShowPw(v => !v)}
+                      onClick={() => setShowPw((v) => !v)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
                     >
-                      {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showPw ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
                     </button>
                   </div>
+
                   <PasswordStrength password={form.password} />
                 </div>
 
                 {/* Confirm password */}
                 <div>
-                  <label className="block text-xs font-medium text-slate-500 mb-1.5 ml-1">Confirm Password</label>
+                  <label className="block text-xs font-medium text-slate-500 mb-1.5 ml-1">
+                    Confirm Password
+                  </label>
+
                   <div className="relative">
                     <input
                       type={showConfirm ? 'text' : 'password'}
@@ -188,26 +263,40 @@ export function SignUp() {
                       style={{
                         ...inputBase,
                         borderColor: form.confirm
-                          ? (passwordsMatch ? 'rgba(52,211,153,0.4)' : 'rgba(239,68,68,0.4)')
+                          ? passwordsMatch
+                            ? 'rgba(52,211,153,0.4)'
+                            : 'rgba(239,68,68,0.4)'
                           : 'rgba(0,212,170,0.18)',
                       }}
-                      onFocus={(e) => { e.target.style.borderColor = 'rgba(0,212,170,0.5)'; }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = 'rgba(0,212,170,0.5)';
+                      }}
                       onBlur={(e) => {
                         e.target.style.borderColor = form.confirm
-                          ? (passwordsMatch ? 'rgba(52,211,153,0.4)' : 'rgba(239,68,68,0.4)')
+                          ? passwordsMatch
+                            ? 'rgba(52,211,153,0.4)'
+                            : 'rgba(239,68,68,0.4)'
                           : 'rgba(0,212,170,0.18)';
                       }}
                     />
+
                     <button
                       type="button"
-                      onClick={() => setShowConfirm(v => !v)}
+                      onClick={() => setShowConfirm((v) => !v)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
                     >
-                      {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showConfirm ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
                     </button>
                   </div>
+
                   {form.confirm && !passwordsMatch && (
-                    <p className="text-xs text-red-400 mt-1.5 ml-1">Passwords don&apos;t match</p>
+                    <p className="text-xs text-red-400 mt-1.5 ml-1">
+                      Passwords don&apos;t match
+                    </p>
                   )}
                 </div>
               </div>
@@ -227,23 +316,46 @@ export function SignUp() {
                     ? 'linear-gradient(135deg, #00D4AA 0%, #00B892 60%, #009C7A 100%)'
                     : 'rgba(0,212,170,0.3)',
                   borderRadius: '9999px',
-                  boxShadow: isValid ? '0 4px 20px rgba(0,212,170,0.4)' : 'none',
+                  boxShadow: isValid
+                    ? '0 4px 20px rgba(0,212,170,0.4)'
+                    : 'none',
                 }}
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    <svg
+                      className="animate-spin w-4 h-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                      />
                     </svg>
                     Creating account…
                   </span>
-                ) : 'Create Account'}
+                ) : (
+                  'Create Account'
+                )}
               </button>
 
               <p className="text-center text-xs text-slate-500">
                 Already have an account?{' '}
-                <Link href="/connect" className="text-slate-300 hover:text-white transition-colors font-medium">
+                <Link
+                  href="/connect"
+                  className="transition-colors font-medium"
+                  style={{ color: '#00D4AA' }}
+                >
                   Sign in
                 </Link>
               </p>

@@ -80,7 +80,6 @@ export function Navbar() {
   const navLinks = [
     { href: '/dashboard', label: 'Dashboard' },
     { href: '/deposit', label: 'Deposit' },
-    { href: '/payment', label: 'Payments' },
     { href: '/lottery', label: 'Lottery' },
   ];
 
@@ -113,8 +112,8 @@ export function Navbar() {
       <motion.nav
         className={`fixed left-0 right-0 z-50 flex items-center gap-6 px-6 py-3 transition-all duration-300 ${isDemo ? 'top-6' : 'top-0'}`}
         style={{
-          background: 'rgba(13, 20, 18, 0.92)',
-          borderBottom: '1px solid rgba(0, 212, 170, 0.1)',
+          background: 'rgba(8,8,8,0.97)',
+          borderBottom: '1px solid rgba(184,115,51,0.12)',
           backdropFilter: 'blur(24px)',
           WebkitBackdropFilter: 'blur(24px)',
         }}

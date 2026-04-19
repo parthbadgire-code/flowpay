@@ -42,8 +42,10 @@ export function PortfolioSummary() {
           transition={{ delay: i * 0.07 }}
           className="rounded-2xl p-4 relative overflow-hidden"
           style={{
-            background: 'rgba(14,22,19,0.9)',
-            border: '1px solid rgba(0,212,170,0.1)',
+            background: 'rgba(6,6,6,0.98)',
+            border: i % 2 === 0
+              ? '1px solid rgba(255,255,255,0.07)'
+              : '1px solid rgba(184,115,51,0.12)',
           }}
         >
           {/* Glow orb */}
