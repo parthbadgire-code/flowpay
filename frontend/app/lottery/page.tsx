@@ -2,60 +2,86 @@
 
 import { useEffect, useState } from 'react';
 import { useWallet } from '@/hooks/useWallet';
-import { useFlowPay } from '@/lib/flowpayContext';
-import { mockLotteryPool, mockLotteryWinners } from '@/data/lotteryWinners';
 import { motion } from 'framer-motion';
 import { ArrowRight, Check, Sparkles } from 'lucide-react';
 import Link from 'next/link';
-import { Progress, Badge } from '@/components/ui';
-import { pickWinner } from '@/services/lotteryService';
-import type { LotteryWinner } from '@/types/lottery';
 import { AuthGuard } from '@/components/auth/AuthGuard';
-
-function formatCountdown(drawTs: string | Date | number) {
-  const diff = Math.max(0, new Date(drawTs).getTime() - Date.now());
-  const h = Math.floor(diff / 3600000);
-  const m = Math.floor((diff % 3600000) / 60000);
-  const s = Math.floor((diff % 60000) / 1000);
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-}
-
-function formatTimeAgo(ts: string | Date | number) {
-  const diff = Date.now() - new Date(ts).getTime();
-  const h = Math.floor(diff / 3600000);
-  if (h < 1) return 'just now';
-  if (h < 24) return `${h} hour${h > 1 ? 's' : ''} ago`;
-  return `${Math.floor(h / 24)} day${Math.floor(h / 24) > 1 ? 's' : ''} ago`;
-}
+import { useAccount, useReadContract, useWriteContract } from 'wagmi';
+import RewardLotteryConfig from '@/src/contracts/RewardLottery.json';
+import { ADDRESSES } from '@/src/contracts/addresses';
 
 export default function LotteryPage() {
   const { isConnected, tryDemo } = useWallet();
-  const { lotteryEntries } = useFlowPay();
-  const [countdown, setCountdown] = useState(formatCountdown(mockLotteryPool.drawTimestamp));
+  const { address } = useAccount();
+
+  // ----- WAGMI BLOCKCHAIN READS -----
+  const { data: participantCount } = useReadContract({
+    address: ADDRESSES.RewardLottery as `0x${string}`,
+    abi: RewardLotteryConfig.abi,
+    functionName: 'getParticipantCount',
+    query: { refetchInterval: 5000 }
+  });
+
+  const { data: lastWinner } = useReadContract({
+    address: ADDRESSES.RewardLottery as `0x${string}`,
+    abi: RewardLotteryConfig.abi,
+    functionName: 'lastWinner',
+    query: { refetchInterval: 5000 }
+  });
+
+  const { data: drawInProgress } = useReadContract({
+    address: ADDRESSES.RewardLottery as `0x${string}`,
+    abi: RewardLotteryConfig.abi,
+    functionName: 'drawInProgress',
+    query: { refetchInterval: 5000 }
+  });
+
+  const { data: myTickets } = useReadContract({
+    address: ADDRESSES.RewardLottery as `0x${string}`,
+    abi: RewardLotteryConfig.abi,
+    functionName: 'ticketCount',
+    args: address ? [address] : undefined,
+    query: { enabled: !!address, refetchInterval: 5000 }
+  });
+  
+  // Hardcode fallback value
+  const totalEntries = participantCount !== undefined ? Number(participantCount) : 0;
+  const userEntries = myTickets !== undefined ? Number(myTickets) : 0;
+  const isDrawing = Boolean(drawInProgress);
+  const historicWinner = lastWinner && lastWinner !== '0x0000000000000000000000000000000000000000' 
+      ? String(lastWinner) : null;
+
+  // ----- WAGMI BLOCKCHAIN WRITE -----
+  const { writeContractAsync } = useWriteContract();
   const [loadingPick, setLoadingPick] = useState(false);
-  const [winners, setWinners] = useState<LotteryWinner[]>(mockLotteryWinners);
+
+  const handlePickWinner = async () => {
+    try {
+      setLoadingPick(true);
+      if (!ADDRESSES.RewardLottery) throw new Error("Contract Address missing");
+      
+      await writeContractAsync({
+        address: ADDRESSES.RewardLottery as `0x${string}`,
+        abi: RewardLotteryConfig.abi,
+        functionName: 'requestWinner',
+      });
+      // The chainlink callback will fire `fulfillRandomWords` asynchronously
+    } catch (e) {
+      console.error(e);
+      alert("Failed to pick winner (User rejected OR not owner)");
+    } finally {
+      setLoadingPick(false);
+    }
+  };
 
   useEffect(() => {
     if (!isConnected) { tryDemo(); }
   }, [isConnected, tryDemo]);
 
-  useEffect(() => {
-    const t = setInterval(() => setCountdown(formatCountdown(mockLotteryPool.drawTimestamp)), 1000);
-    return () => clearInterval(t);
-  }, []);
 
-  const pool = { ...mockLotteryPool, userEntries: lotteryEntries || mockLotteryPool.userEntries };
-  const capacityPct = Math.min(100, (pool.totalEntries / 100) * 75);
-
-  const handlePickWinner = async () => {
-    setLoadingPick(true);
-    try {
-      const w = await pickWinner(pool.currentRound);
-      setWinners(prev => [w, ...prev]);
-    } finally {
-      setLoadingPick(false);
-    }
-  };
+  const capacityPct = Math.min(100, (totalEntries / 100) * 75);
+  
+  const shortenAddress = (addr: string) => `${addr.slice(0,6)}...${addr.slice(-4)}`;
 
   const cardStyle = {
     background: 'rgba(18, 16, 34, 0.9)',
@@ -82,7 +108,6 @@ export default function LotteryPage() {
                 boxShadow: '0 4px 40px rgba(0,0,0,0.5)',
               }}
             >
-              {/* Background blobs */}
               <div className="absolute -top-16 -left-16 w-48 h-48 rounded-full pointer-events-none"
                 style={{ background: 'radial-gradient(ellipse, rgba(0,184,146,0.18) 0%, transparent 70%)' }} />
               <div className="absolute top-8 right-8 w-4 h-4 rounded-full"
@@ -90,7 +115,6 @@ export default function LotteryPage() {
               <div className="absolute top-24 right-24 w-3 h-3 rotate-45"
                 style={{ background: 'rgba(0,255,135,0.3)' }} />
 
-              {/* Check circle */}
               <div className="mt-8 mb-5">
                 <div
                   className="w-20 h-20 rounded-full flex items-center justify-center"
@@ -107,9 +131,7 @@ export default function LotteryPage() {
               <h2 className="text-2xl font-black text-white mb-1">Payment Successful</h2>
               <p className="text-slate-400 text-sm mb-7">Merchant received ₹100</p>
 
-              {/* Receipt rows */}
               <div className="w-full space-y-3 mb-6">
-                {/* Paid from row */}
                 <div className="flex items-center justify-between p-4 rounded-2xl"
                   style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
                   <div className="flex items-center gap-3">
@@ -132,7 +154,6 @@ export default function LotteryPage() {
                   </div>
                 </div>
 
-                {/* Lottery entry earned */}
                 <div
                   className="flex items-center justify-between p-4 rounded-2xl cursor-pointer group transition-all"
                   style={{ background: 'rgba(0,184,146,0.12)', border: '1px solid rgba(0,212,170,0.25)' }}
@@ -173,9 +194,9 @@ export default function LotteryPage() {
                 <div className="flex items-center justify-between mb-4">
                   <span
                     className="text-xs font-bold px-3 py-1 rounded-full"
-                    style={{ background: 'rgba(0,212,170,0.15)', color: '#00D4AA', border: '1px solid rgba(0,212,170,0.3)' }}
+                    style={{ background: isDrawing ? 'rgba(255,165,0,0.15)' : 'rgba(0,212,170,0.15)', color: isDrawing ? 'orange' : '#00D4AA', border: '1px solid rgba(0,212,170,0.3)' }}
                   >
-                    ACTIVE POOL
+                    {isDrawing ? "CHAINLINK VRF DRAWING..." : "VRF ACTIVE POOL"}
                   </span>
                   <div className="text-right">
                     <p className="text-xs text-slate-500 uppercase tracking-wider">Current Prize</p>
@@ -183,8 +204,8 @@ export default function LotteryPage() {
                 </div>
 
                 <div className="flex items-end justify-between mb-4">
-                  <h3 className="text-2xl font-black text-white">Weekly Draw</h3>
-                  <p className="text-3xl font-black text-white">50 <span className="text-xl">USDC</span></p>
+                  <h3 className="text-2xl font-black text-white">Chainlink Draw</h3>
+                  <p className="text-3xl font-black text-white">100 <span className="text-xl">mINR</span></p>
                 </div>
 
                 {/* Progress bar */}
@@ -198,19 +219,18 @@ export default function LotteryPage() {
                       transition={{ duration: 1, ease: 'easeOut' }}
                     />
                   </div>
-                  <p className="text-xs text-slate-500 text-right mt-1">75% Capacity</p>
                 </div>
 
                 {/* Stats row */}
                 <div className="grid grid-cols-2 gap-4 mt-4 pt-4"
                   style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                   <div>
-                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">YOUR ENTRIES</p>
-                    <p className="text-2xl font-black text-white">{pool.userEntries}</p>
+                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">TOTAL ENTRIES (ALL)</p>
+                    <p className="text-2xl font-black text-white">{totalEntries}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">DRAWS IN</p>
-                    <p className="text-2xl font-black text-white font-mono">{countdown}</p>
+                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">YOUR TICKETS</p>
+                    <p className="text-2xl font-black text-white font-mono">{userEntries}</p>
                   </div>
                 </div>
               </div>
@@ -218,7 +238,7 @@ export default function LotteryPage() {
               {/* Pick Winner button */}
               <button
                 onClick={handlePickWinner}
-                disabled={loadingPick}
+                disabled={loadingPick || isDrawing || totalEntries === 0}
                 className="w-full py-4 mb-5 flex items-center justify-center gap-2 font-bold text-white rounded-2xl transition-all disabled:opacity-60"
                 style={{
                   background: 'rgba(18,16,34,0.9)',
@@ -229,25 +249,23 @@ export default function LotteryPage() {
                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(18,16,34,0.9)'; }}
               >
                 <Sparkles className="w-4 h-4" style={{ color: '#00D4AA' }} />
-                <span style={{ color: '#00D4AA' }}>{loadingPick ? 'Drawing…' : 'Pick Winner (Admin)'}</span>
+                <span style={{ color: '#00D4AA' }}>{isDrawing ? 'Awaiting Oracle Fulfillment...' : loadingPick ? 'Requesting...' : 'Request Winner (Admin)'}</span>
               </button>
 
               {/* Recent Winners */}
+              {historicWinner && (
               <div>
-                <h3 className="text-lg font-black text-white mb-3">Recent Winners</h3>
+                <h3 className="text-lg font-black text-white mb-3">Latest Winner</h3>
                 <div className="space-y-2">
-                  {winners.slice(0, 3).map((w, i) => (
                     <motion.div
-                      key={w.id}
                       initial={{ opacity: 0, x: 10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.06 }}
                       className="flex items-center gap-3 p-4 rounded-2xl"
                       style={cardStyle}
                     >
                       <div
                         className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                        style={{ background: w.avatarColor || 'linear-gradient(135deg, #00D4AA, #009C7A)' }}
+                        style={{ background: 'linear-gradient(135deg, #00D4AA, #009C7A)' }}
                       >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                           <circle cx="12" cy="8" r="4" stroke="white" strokeWidth="1.5" />
@@ -255,21 +273,20 @@ export default function LotteryPage() {
                         </svg>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-white truncate">{w.shortAddress}</p>
-                        <p className="text-xs text-slate-500">{formatTimeAgo(w.timestamp)}</p>
+                        <p className="text-sm font-semibold text-white truncate">{shortenAddress(historicWinner)}</p>
+                        <p className="text-xs text-green-400">Verified by VRF</p>
                       </div>
                       <p className="text-sm font-bold" style={{ color: '#00D4AA' }}>
-                        {w.prize.icon && `${Math.round(w.prize.valueINR / 83)} USDC`}
+                        100 mINR
                       </p>
                     </motion.div>
-                  ))}
                 </div>
               </div>
+              )}
             </motion.div>
           </div>
         </main>
 
-        {/* Footer */}
         <footer className="py-8 mt-8" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
           <div className="max-w-6xl mx-auto px-4 text-center">
             <p className="text-white font-black text-lg mb-3">FlowPay</p>

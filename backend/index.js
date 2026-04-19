@@ -6,6 +6,7 @@
 
 const express = require('express');
 const cors = require('cors');
+const { ethers } = require('ethers');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -38,7 +39,7 @@ app.get('/api/balance/:address', (req, res) => {
       { symbol: 'ETH',  amount: 0.00385, inrValue: 100, usdValue: 1.20 },
     ],
     totalINR: 450,
-    network: 'Polygon Amoy',
+    network: 'Ethereum Sepolia',
   });
 });
 
@@ -81,15 +82,34 @@ app.get('/api/lottery/pool', (req, res) => {
 });
 
 app.post('/api/lottery/pick-winner', (req, res) => {
-  // TODO: Call Chainlink VRF for verifiable randomness
+  // Call Chainlink VRF for verifiable randomness is handled on-chain
   res.json({
     success: true,
-    winner: {
-      address: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
-      prize: { type: 'cashback', label: '₹50 Cashback', valueINR: 50 },
-      round: 48,
-    },
+    message: "Winner is being selected via Chainlink VRF on-chain",
   });
+});
+
+app.get('/api/lottery/winner', async (req, res) => {
+  const { contractAddress } = req.query;
+  if (!contractAddress) return res.status(400).json({ error: "Missing contractAddress param" });
+  
+  try {
+    // Ethers v6 compatible JSON RPC provider to Sepolia
+    const provider = new ethers.JsonRpcProvider('https://rpc2.sepolia.org');
+    const abi = ["function lastWinner() view returns (address)"];
+    const contract = new ethers.Contract(contractAddress, abi, provider);
+    
+    const lastWinner = await contract.lastWinner();
+    res.json({
+      success: true,
+      lastWinner
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
 });
 
 // ─── Health ────────────────────────────────────────────────────────────────

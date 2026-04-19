@@ -1,7 +1,10 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
-import { useAccount } from 'wagmi';
+import { useAccount, useWriteContract } from 'wagmi';
+import { ADDRESSES } from '@/src/contracts/addresses';
+// The JSON will be created in the next steps, we use dynamic/any type assertion fallback just in case
+import RewardLotteryABI from '@/src/contracts/RewardLottery.json';
 import { NFTAsset } from '@/types/wallet';
 import { PaymentTransaction } from '@/types/payment';
 import { DepositTransaction } from '@/types/deposit';
@@ -69,6 +72,7 @@ const ENTRIES_KEY = 'flowpay_lottery_entries';
 
 export function FlowPayProvider({ children }: { children: React.ReactNode }) {
   const account = useAccount(); // Wagmi
+  const { writeContractAsync } = useWriteContract();
   
   const [isForcedDemo, setIsForcedDemo] = useState(false);
   const mode: 'demo' | 'real' = (account.isConnected && !isForcedDemo) ? 'real' : 'demo';
@@ -145,6 +149,19 @@ export function FlowPayProvider({ children }: { children: React.ReactNode }) {
     const newBalance = flowPayInrBalance - amountINR;
     setFlowPayInrBalance(newBalance);
     localStorage.setItem(STORAGE_KEY, String(newBalance));
+    
+    try {
+      if (mode === 'real' && account.address && ADDRESSES.RewardLottery) {
+        writeContractAsync({
+          address: ADDRESSES.RewardLottery as `0x${string}`,
+          abi: RewardLotteryABI.abi,
+          functionName: 'addParticipant',
+          args: [account.address]
+        }).catch(e => console.error("VRF AddParticipant error (background):", e));
+      }
+    } catch (e) {
+      console.warn("Failed to initiate VRF addParticipant", e);
+    }
     
     const tx: PaymentTransaction = {
       id: `pay_${Date.now()}`,
