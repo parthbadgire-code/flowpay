@@ -8,10 +8,12 @@ import { ADDRESSES } from '@/src/contracts/addresses';
 import { ExternalLink, ArrowDownRight, ArrowUpRight, Activity } from 'lucide-react';
 
 interface TxRecord {
-  type: 'BORROW' | 'REPAY';
+  type: 'RECEIVED' | 'SENT';
   txHash: string;
-  blockNumber: bigint;
-  amount: number;
+  blockNumber: string;
+  amount: string;
+  asset: string;
+  category: string;
 }
 
 export function TransactionHistoryCard() {
@@ -22,116 +24,89 @@ export function TransactionHistoryCard() {
 
   useEffect(() => {
     let mounted = true;
-    async function fetchLogs() {
-      if (!address || !publicClient) {
+    async function fetchHistory() {
+      if (!address) {
         setLoading(false);
         return;
       }
       try {
         setLoading(true);
 
-        const openedAbi = parseAbiItem('event PositionOpened(uint256 indexed positionId, address indexed borrower, uint256 creditIssued)');
-        const repaidAbi = parseAbiItem('event PositionRepaid(uint256 indexed positionId, address indexed borrower, uint256 totalRepaid)');
+        const apiKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || 'n7MXNbmaASHEe5yswprAx';
+        const url = `https://eth-sepolia.g.alchemy.com/v2/${apiKey}`;
 
-        // We fetch logs from a reasonably recent testnet block to avoid RPC timeouts
-        const fromBlock = BigInt(5740000); // generic recent block on Sepolia
-        
-        // Parallel fetch for both events strictly filtered by the user's address
-        const [openedLogs, repaidLogs] = await Promise.all([
-          publicClient.getLogs({
-            address: ADDRESSES.CollateralManager as `0x${string}`,
-            event: openedAbi,
-            args: { borrower: address },
-            fromBlock: 'earliest' // Alchemy can usually handle earliest for indexed queries!
-          }),
-          publicClient.getLogs({
-            address: ADDRESSES.CollateralManager as `0x${string}`,
-            event: repaidAbi,
-            args: { borrower: address },
-            fromBlock: 'earliest'
-          })
+        const fetchTransfers = async (isFrom: boolean) => {
+          const body = {
+            id: 1,
+            jsonrpc: "2.0",
+            method: "alchemy_getAssetTransfers",
+            params: [{
+              fromBlock: "0x0",
+              toBlock: "latest",
+              category: ["erc20", "erc721", "external"],
+              [isFrom ? "fromAddress" : "toAddress"]: address,
+              excludeZeroValue: true,
+              order: "desc",
+              maxCount: "0x14" // Get last 20 transfers each
+            }]
+          };
+
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+          const data = await res.json();
+          return data.result?.transfers || [];
+        };
+
+        const [fromTransfers, toTransfers] = await Promise.all([
+          fetchTransfers(true),
+          fetchTransfers(false)
         ]);
 
         if (!mounted) return;
 
-        // Parse and merge logs
-        const records: TxRecord[] = [];
+        const merged: TxRecord[] = [
+          ...fromTransfers.map((t: any) => ({
+            type: 'SENT' as const,
+            txHash: t.hash,
+            blockNumber: parseInt(t.blockNum, 16).toString(),
+            amount: t.value?.toString() || '0',
+            asset: t.asset || 'ETH',
+            category: t.category
+          })),
+          ...toTransfers.map((t: any) => ({
+            type: 'RECEIVED' as const,
+            txHash: t.hash,
+            blockNumber: parseInt(t.blockNum, 16).toString(),
+            amount: t.value?.toString() || '0',
+            asset: t.asset || 'ETH',
+            category: t.category
+          }))
+        ];
 
-        openedLogs.forEach((log: any) => {
-          records.push({
-            type: 'BORROW',
-            txHash: log.transactionHash,
-            blockNumber: log.blockNumber || 0n,
-            amount: Number(log.args.creditIssued) / 1e18,
-          });
-        });
+        // Unique by hash and sort by block descending
+        const unique = Array.from(new Map(merged.map(item => [item.txHash + item.type, item])).values());
+        unique.sort((a, b) => Number(b.blockNumber) - Number(a.blockNumber));
 
-        repaidLogs.forEach((log: any) => {
-          records.push({
-            type: 'REPAY',
-            txHash: log.transactionHash,
-            blockNumber: log.blockNumber || 0n,
-            amount: Number(log.args.totalRepaid) / 1e18,
-          });
-        });
-
-        // Sort dynamically (newest / highest block first)
-        records.sort((a, b) => Number(b.blockNumber - a.blockNumber));
-
-        setHistory(records);
+        setHistory(unique);
       } catch (err) {
-        console.error("Failed to fetch on-chain tx history:", err);
+        console.error("Failed to fetch Alchemy history:", err);
       } finally {
         if (mounted) setLoading(false);
       }
     }
 
-    fetchLogs();
+    fetchHistory();
 
-    // Setup live listener for new events while on page!
-    if (publicClient && address) {
-      const unwatchOpen = publicClient.watchContractEvent({
-        address: ADDRESSES.CollateralManager as `0x${string}`,
-        abi: [parseAbiItem('event PositionOpened(uint256 indexed positionId, address indexed borrower, uint256 creditIssued)')],
-        eventName: 'PositionOpened',
-        args: { borrower: address },
-        onLogs: (logs) => {
-          logs.forEach((log: any) => {
-            setHistory(prev => [{
-              type: 'BORROW',
-              txHash: log.transactionHash,
-              blockNumber: log.blockNumber || 0n,
-              amount: Number(log.args.creditIssued) / 1e18,
-            }, ...prev]);
-          });
-        }
-      });
-      const unwatchRepay = publicClient.watchContractEvent({
-        address: ADDRESSES.CollateralManager as `0x${string}`,
-        abi: [parseAbiItem('event PositionRepaid(uint256 indexed positionId, address indexed borrower, uint256 totalRepaid)')],
-        eventName: 'PositionRepaid',
-        args: { borrower: address },
-        onLogs: (logs) => {
-          logs.forEach((log: any) => {
-            setHistory(prev => [{
-              type: 'REPAY',
-              txHash: log.transactionHash,
-              blockNumber: log.blockNumber || 0n,
-              amount: Number(log.args.totalRepaid) / 1e18,
-            }, ...prev]);
-          });
-        }
-      });
+    const interval = setInterval(fetchHistory, 15000); // Polling every 15s instead of watching logs to keep it simple and consistent
 
-      return () => {
-        mounted = false;
-        unwatchOpen();
-        unwatchRepay();
-      };
-    }
-
-    return () => { mounted = false; };
-  }, [address, publicClient]);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, [address]);
 
   if (!address) return null;
 
@@ -139,7 +114,7 @@ export function TransactionHistoryCard() {
     <div>
       <div className="flex items-center gap-2 mb-4">
         <Activity className="w-4 h-4 text-slate-400" />
-        <p className="text-sm font-bold text-white tracking-widest uppercase">Live Subgraph</p>
+        <p className="text-sm font-bold text-white tracking-widest uppercase">On-Chain Activity</p>
       </div>
 
       <div className="space-y-3">
@@ -157,19 +132,19 @@ export function TransactionHistoryCard() {
               className="flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${tx.type === 'BORROW' ? 'bg-[#00D4AA]/20 text-[#00D4AA]' : 'bg-[#627EEA]/20 text-[#627EEA]'}`}>
-                  {tx.type === 'BORROW' ? <ArrowDownRight className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${tx.type === 'RECEIVED' ? 'bg-[#00D4AA]/20 text-[#00D4AA]' : 'bg-[#627EEA]/20 text-[#627EEA]'}`}>
+                  {tx.type === 'RECEIVED' ? <ArrowDownRight className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-200">{tx.type === 'BORROW' ? 'Credit Received' : 'Debt Repaid'}</p>
-                  <p className="text-[10px] text-slate-500">Block #{tx.blockNumber.toString()}</p>
+                  <p className="text-xs font-bold text-slate-200">{tx.type === 'RECEIVED' ? 'Received' : 'Sent'}</p>
+                  <p className="text-[10px] text-slate-500">{tx.asset} • Block #{tx.blockNumber}</p>
                 </div>
               </div>
 
               <div className="text-right flex items-center gap-2">
                 <div>
                   <p className="text-sm font-black text-white">
-                    {tx.type === 'BORROW' ? '+' : '-'} {tx.amount.toLocaleString(undefined, { maximumFractionDigits: 0 })} mINR
+                    {tx.type === 'RECEIVED' ? '+' : '-'} {parseFloat(tx.amount).toLocaleString(undefined, { maximumFractionDigits: 4 })} {tx.asset}
                   </p>
                 </div>
                 <a
