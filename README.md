@@ -5,6 +5,8 @@ Welcome to **FlowPay**, a decentralized finance (DeFi) on-chain borrowing and co
 ## 📖 Table of Contents
 - [About the Project](#about-the-project)
 - [Key Features](#key-features)
+- [Core Algorithms & Math](#core-algorithms--math)
+- [Protocol Economics & Profitability](#protocol-economics--profitability)
 - [Architecture & Platform Modules](#architecture--platform-modules)
 - [User Workflows](#user-workflows)
 - [Technology Stack](#technology-stack)
@@ -48,7 +50,7 @@ FlowPay leverages mathematically rigorous models securely locked on-chain (e.g.,
    Total Borrowed USD = Total INR Debt / INR_PER_USD (83.5)
    ```
 3. **Health Factor (HF) Algorithm:**
-   The definitive dynamic safety safety score. An `HF < 1.0` triggers liquidation.
+   The definitive dynamic safety score. An `HF < 1.0` triggers liquidation.
    ```text
    Health Factor = (Total Collateral USD * LIQUIDATION_THRESHOLD) / Total Borrowed USD
    ```
@@ -80,10 +82,10 @@ FlowPay is designed as a fundamentally self-sustaining and profitable decentrali
 FlowPay employs a modern architecture, splitting responsibilities cleanly between the frontend, smart contracts, and off-chain indexing databases.
 
 1. **Frontend App (`/frontend`)**
-   The presentation layer built on React 19 and Next.js. It manages the decentralized wallet connections and reads/writes to the blockchain via Viem. It features aggressive caching, clean UI/UX using Tailwind CSS v4, and dynamic animations with Framer Motion.
+   The presentation layer built on React 19 and Next.js (App Router). It manages the decentralized wallet connections and reads/writes to the blockchain via Viem. It features aggressive caching, clean UI/UX using Tailwind CSS v4, and dynamic animations with Framer Motion.
 
 2. **Smart Contracts (`/smart-contracts`)**
-   The heart of the borrowing protocol. Written in Solidity and managed via Hardhat, these contracts handle collateral custody, LTV mathematical logic, price oracle integrations via Chainlink (for asset valuation), and liquidator interactions.
+   The heart of the borrowing protocol. Written in Solidity and managed via Hardhat, these contracts handle collateral custody, LTV mathematical logic, and liquidator interactions. Price oracle integrations are powered by **Chainlink Data Feeds** (ETH/USD, USDC/USD) for tamper-proof, decentralized asset valuation directly on-chain.
 
 3. **Off-Chain State (`Supabase`)**
    Used to persist contextual user data that doesn't strictly need to be on-chain, accelerating the loading times for the dashboard.
@@ -117,7 +119,7 @@ FlowPay employs a modern architecture, splitting responsibilities cleanly betwee
 - **Development Environment:** Hardhat
 - **Language:** Solidity
 - **Libraries:** OpenZeppelin Contracts
-- **Oracles:** Chainlink Price Feeds
+- **Oracles:** Chainlink Data Feeds (Decentralized Price Oracles)
 
 ### Databases
 - **Relational DB:** Supabase (PostgreSQL)
