@@ -20,22 +20,15 @@ import { useAuth } from '@/lib/AuthContext';
 import { Badge } from '@/components/ui';
 
 // Credit components
-import { PortfolioSummary } from '@/components/credit/PortfolioSummary';
-import { HealthFactorGauge } from '@/components/credit/HealthFactorGauge';
-import { RiskMeter } from '@/components/credit/RiskMeter';
-import { PriceFeedCard } from '@/components/credit/PriceFeedCard';
-import { LoanPositionCard } from '@/components/credit/LoanPositionCard';
 import { FlowPayWalletCard } from '@/components/credit/FlowPayWalletCard';
 import { LoanTable } from '@/components/credit/LoanTable';
-import { BorrowingSimulator } from '@/components/credit/BorrowingSimulator';
-import {
-  LiquidationAlert,
-  LiquidationToast,
-} from '@/components/credit/LiquidationAlert';
-import { DepositModal } from '@/components/credit/DepositModal';
-import { BorrowModal } from '@/components/credit/BorrowModal';
+import { TestnetFaucet } from '@/components/credit/TestnetFaucet';
+import { OpenPositionModal } from '@/components/credit/OpenPositionModal';
 import { RepayModal } from '@/components/credit/RepayModal';
-import { WithdrawModal } from '@/components/credit/WithdrawModal';
+import { LiquidationAlert, LiquidationToast } from '@/components/credit/LiquidationAlert';
+import { BorrowingSimulator } from '@/components/credit/BorrowingSimulator';
+import { PriceFeedCard } from '@/components/credit/PriceFeedCard';
+import { LoanPositionCard } from '@/components/credit/LoanPositionCard';
 
 const TEAL = '#00D4AA';
 const MINT = '#00FF87';
@@ -67,8 +60,6 @@ export default function DashboardPage() {
     totalCollateralUSD,
     totalBorrowedUSD,
     availableCreditUSD,
-    liquidationPrice,
-    collateralRatio,
     currency,
     setCurrency,
     walletBalanceINR,
@@ -76,10 +67,8 @@ export default function DashboardPage() {
   } = useCreditLine();
 
   const [connecting, setConnecting] = useState(false);
-  const [depositOpen, setDepositOpen] = useState(false);
-  const [borrowOpen, setBorrowOpen] = useState(false);
+  const [openPositionOpen, setOpenPositionOpen] = useState(false);
   const [repayOpen, setRepayOpen] = useState(false);
-  const [withdrawOpen, setWithdrawOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -147,8 +136,6 @@ export default function DashboardPage() {
         ].join(','),
       }}
     >
-      <LiquidationToast />
-
       <main className="flex-1 w-full max-w-7xl mx-auto pb-24 lg:pb-10 px-4 lg:px-8">
         <div className="pt-8 pb-5">
           <motion.div
@@ -199,6 +186,8 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex items-center gap-2.5">
+              <TestnetFaucet />
+
               <button
                 onClick={() =>
                   setCurrency(currency === 'USD' ? 'INR' : 'USD')
@@ -219,23 +208,14 @@ export default function DashboardPage() {
               </button>
 
               {isConnected && (
-                <>
-                  <Badge
-                    variant={riskBadgeVariant as 'green' | 'yellow' | 'red'}
-                    size="sm"
-                  >
-                    {riskLabel}
-                  </Badge>
-
-                  <a
-                    href={`https://amoy.polygonscan.com/address/${address}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-slate-700 hover:text-slate-400 transition-colors"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-                </>
+                <a
+                  href={`https://amoy.polygonscan.com/address/${address}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-700 hover:text-slate-400 transition-colors"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
               )}
             </div>
           </motion.div>
@@ -270,13 +250,6 @@ export default function DashboardPage() {
                 >
                   <span className="text-4xl">🏦</span>
                 </div>
-
-                <motion.div
-                  className="absolute -top-2 -right-2 w-4 h-4 rounded-full"
-                  style={{ background: 'rgba(0, 212, 170,0.6)' }}
-                  animate={{ y: [0, -8, 0], opacity: [0.4, 1, 0.4] }}
-                  transition={{ duration: 2.5, repeat: Infinity }}
-                />
               </div>
 
               <h2 className="text-2xl font-black text-white mb-3">
@@ -310,24 +283,32 @@ export default function DashboardPage() {
               exit={{ opacity: 0 }}
               className="space-y-6"
             >
-              <LiquidationAlert />
-              <PortfolioSummary />
-
-              {/* ── Row 1: Quick Actions + FlowPay Wallet + Price Feed ── */}
+              <LiquidationToast />
               <div className="grid lg:grid-cols-3 gap-6">
-                {/* Left col: Quick Actions + Loans */}
                 <div className="lg:col-span-2 space-y-6">
-                  {/* Quick Actions */}
+                  <LiquidationAlert />
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-[0.18em] mb-3" style={{ color: COPPER }}>
                       Quick Actions
                     </p>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-2 gap-3">
                       {[
-                        { label: 'Deposit',  icon: <ArrowDownToLine className="w-5 h-5" />, color: TEAL,   bg: 'rgba(0,0,0,0.8)', border: `${TEAL}30`,   action: () => setDepositOpen(true) },
-                        { label: 'Borrow',   icon: <TrendingUp className="w-5 h-5" />,     color: COPPER, bg: 'rgba(0,0,0,0.8)', border: `${COPPER}30`, action: () => setBorrowOpen(true) },
-                        { label: 'Repay',    icon: <ArrowUpLeft className="w-5 h-5" />,    color: MINT,   bg: 'rgba(0,0,0,0.8)', border: `${MINT}30`,   action: () => setRepayOpen(true) },
-                        { label: 'Withdraw', icon: <Unlock className="w-5 h-5" />,         color: RUST,   bg: 'rgba(0,0,0,0.8)', border: `${RUST}35`,   action: () => setWithdrawOpen(true) },
+                        {
+                          label: 'Open Position',
+                          icon: <ArrowDownToLine className="w-5 h-5" />,
+                          color: TEAL,
+                          bg: 'rgba(0,0,0,0.8)',
+                          border: `${TEAL}30`,
+                          action: () => setOpenPositionOpen(true),
+                        },
+                        {
+                          label: 'Repay',
+                          icon: <ArrowUpLeft className="w-5 h-5" />,
+                          color: MINT,
+                          bg: 'rgba(0,0,0,0.8)',
+                          border: `${MINT}30`,
+                          action: () => setRepayOpen(true),
+                        },
                       ].map((action) => (
                         <motion.button
                           key={action.label}
@@ -366,9 +347,9 @@ export default function DashboardPage() {
                         Active Positions
                       </p>
                       <div className="space-y-3">
-                        {activeLoans.filter(l => l.status === 'active').map(loan => (
+                        {activeLoans.map(loan => (
                           <LoanPositionCard
-                            key={loan.loanId}
+                            key={loan.id.toString()}
                             loan={loan}
                             onRepay={() => setRepayOpen(true)}
                           />
@@ -382,91 +363,14 @@ export default function DashboardPage() {
                     <p className="text-[10px] font-bold uppercase tracking-[0.18em] mb-3" style={{ color: COPPER }}>
                       Borrow Simulator
                     </p>
-                    <BorrowingSimulator />
-                  </div>
-
-                  {/* Loan History Table */}
-                  {activeLoans.length > 0 && (
-                    <div>
-                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] mb-3" style={{ color: COPPER }}>
-                        Loan History
-                      </p>
-                      <div className="rounded-2xl overflow-hidden" style={cardBg}>
-                        <LoanTable onRepay={() => setRepayOpen(true)} />
-                      </div>
+                    <div className="rounded-2xl p-5" style={cardBg}>
+                      <BorrowingSimulator />
                     </div>
-                  )}
+                  </div>
                 </div>
 
-                {/* Right col: Wallet + Price Feed + Health + Risk */}
                 <div className="space-y-5">
-                  {/* FlowPay INR Wallet */}
-                  <FlowPayWalletCard />
-
-                  {/* Credit Summary */}
                   <div className="rounded-2xl p-5" style={cardBg}>
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-1 h-3 rounded-full" style={{ background: RUST }} />
-                      <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white">Credit Summary</p>
-                    </div>
-                    <div className="space-y-3">
-                      {[
-                        { label: 'Total Collateral', value: fmt(totalCollateralUSD),  color: TEAL },
-                        { label: 'Total Borrowed',   value: fmt(totalBorrowedUSD),    color: '#627EEA' },
-                        { label: 'Available Credit', value: fmt(availableCreditUSD),  color: MINT },
-                        {
-                          label: 'Health Factor',
-                          value: healthFactor === 999 ? '∞' : healthFactor.toFixed(2),
-                          color: hfColor,
-                        },
-                        {
-                          label: 'Liquidation Price',
-                          value: liquidationPrice > 0 ? `$${liquidationPrice.toFixed(0)}` : '—',
-                          color: ORANGE,
-                        },
-                        {
-                          label: 'Collateral Ratio',
-                          value: collateralRatio > 0 ? `${(collateralRatio * 100).toFixed(1)}%` : '—',
-                          color: COPPER,
-                        },
-                      ].map((item) => (
-                        <div
-                          key={item.label}
-                          className="flex justify-between items-center py-2"
-                          style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
-                        >
-                          <span className="text-xs text-slate-600">{item.label}</span>
-                          <span className="text-sm font-black" style={{ color: item.color, fontFamily: "'Space Grotesk', sans-serif" }}>
-                            {item.value}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Health Factor Gauge */}
-                  <div className="rounded-2xl p-5" style={cardBgBrown}>
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-1 h-3 rounded-full" style={{ background: COPPER }} />
-                      <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white">Health Factor</p>
-                    </div>
-                    <HealthFactorGauge value={healthFactor} />
-                  </div>
-
-                  {/* Risk Meter */}
-                  <div className="rounded-2xl p-5" style={cardBg}>
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-1 h-3 rounded-full" style={{ background: RUST }} />
-                      <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white">Risk Level</p>
-                    </div>
-                    <RiskMeter />
-                  </div>
-
-                  {/* Price Feed */}
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] mb-3" style={{ color: COPPER }}>
-                      Live Prices
-                    </p>
                     <PriceFeedCard />
                   </div>
                 </div>
@@ -477,17 +381,10 @@ export default function DashboardPage() {
       </main>
 
       <AnimatePresence>
-        {depositOpen && (
-          <DepositModal
-            isOpen={depositOpen}
-            onClose={() => setDepositOpen(false)}
-          />
-        )}
-
-        {borrowOpen && (
-          <BorrowModal
-            isOpen={borrowOpen}
-            onClose={() => setBorrowOpen(false)}
+        {openPositionOpen && (
+          <OpenPositionModal
+            isOpen={openPositionOpen}
+            onClose={() => setOpenPositionOpen(false)}
           />
         )}
 
@@ -495,13 +392,6 @@ export default function DashboardPage() {
           <RepayModal
             isOpen={repayOpen}
             onClose={() => setRepayOpen(false)}
-          />
-        )}
-
-        {withdrawOpen && (
-          <WithdrawModal
-            isOpen={withdrawOpen}
-            onClose={() => setWithdrawOpen(false)}
           />
         )}
       </AnimatePresence>

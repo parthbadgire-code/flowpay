@@ -14,11 +14,7 @@ const QUICK_ACTIONS = [
 ];
 
 export function FlowPayWalletCard() {
-  const { walletBalanceINR, totalBorrowedUSD, transactions } = useCreditLine();
-
-  // Last borrow/credit transaction
-  const lastCredit = transactions.find(t => t.type === 'borrow');
-  const lastCreditINR = lastCredit ? lastCredit.amountUSD * INR_PER_USD : 0;
+  const { walletBalanceINR, totalBorrowedUSD } = useCreditLine();
 
   return (
     <motion.div
@@ -91,16 +87,6 @@ export function FlowPayWalletCard() {
             ≈ ${(walletBalanceINR / INR_PER_USD).toFixed(2)} USD
           </p>
         </div>
-
-        {/* Last credit pill */}
-        {lastCreditINR > 0 && (
-          <div className="flex items-center gap-1.5 mb-4">
-            <ArrowDownLeft className="w-3 h-3" style={{ color: '#00FF87' }} />
-            <p className="text-xs" style={{ color: '#00FF87' }}>
-              +₹{lastCreditINR.toLocaleString('en-IN', { maximumFractionDigits: 0 })} credited from last borrow
-            </p>
-          </div>
-        )}
 
         {/* Divider */}
         <div className="h-px mb-4" style={{ background: 'rgba(0,212,170,0.1)' }} />

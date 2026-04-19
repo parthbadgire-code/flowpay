@@ -2,13 +2,14 @@
 
 import { motion } from 'framer-motion';
 import { Shield, CheckCircle, Wallet } from 'lucide-react';
-import { LoanPosition } from '@/types/creditLine';
+import { Position } from '@/types/creditLine';
 import { Badge } from '@/components/ui';
 import { useCreditLine } from '@/hooks/useCreditLine';
 import { INR_PER_USD } from '@/types/creditLine';
+import { formatUnits } from 'viem';
 
 interface LoanPositionCardProps {
-  loan: LoanPosition;
+  loan: Position;
   onRepay: () => void;
 }
 
@@ -20,12 +21,20 @@ export function LoanPositionCard({ loan, onRepay }: LoanPositionCardProps) {
       ? `₹${(usd * INR_PER_USD).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
       : `$${usd.toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
 
-  const ltvPct = (loan.ltv * 100).toFixed(1);
-  const ltvColor = loan.ltv < 0.35 ? '#00FF87' : loan.ltv < 0.6 ? '#FFA858' : '#FF5E5E';
-  const tokenColor = loan.collateralToken === 'ETH' ? '#627EEA' : '#2775CA';
-  const tokenIcon = loan.collateralToken === 'ETH' ? '⟠' : '💵';
-  // INR value of what was borrowed against this loan
-  const borrowedINR = loan.borrowedAmountUSD * INR_PER_USD;
+  const collateralToken = loan.isNFT ? 'NFT' : 'MATIC';
+  const collateralAmountNum = Number(formatUnits(loan.collateralAmount, 18));
+  // Use mock MATIC price for now
+  const maticPrice = prices?.matic?.priceUSD || 0.8;
+  const collateralValueUSD = loan.isNFT ? 100 : collateralAmountNum * maticPrice;
+  const borrowedAmountUSD = Number(formatUnits(loan.creditIssued, 18)) / INR_PER_USD;
+  const ltv = collateralValueUSD > 0 ? borrowedAmountUSD / collateralValueUSD : 0;
+  
+  const ltvPct = (ltv * 100).toFixed(1);
+  const ltvColor = ltv < 0.35 ? '#00FF87' : ltv < 0.6 ? '#FFA858' : '#FF5E5E';
+  const tokenColor = loan.isNFT ? '#627EEA' : '#2775CA';
+  const tokenIcon = loan.isNFT ? '🖼️' : 'M';
+  const borrowedINR = borrowedAmountUSD * INR_PER_USD;
+  const status = loan.active ? 'active' : loan.liquidated ? 'liquidated' : 'repaid';
 
   return (
     <motion.div
@@ -49,23 +58,23 @@ export function LoanPositionCard({ loan, onRepay }: LoanPositionCardProps) {
             {tokenIcon}
           </div>
           <div>
-            <p className="text-sm font-bold text-white">{loan.collateralToken} Collateral</p>
-            <p className="text-xs text-slate-500">#{loan.loanId}</p>
+            <p className="text-sm font-bold text-white">{collateralToken} Collateral</p>
+            <p className="text-xs text-slate-500">#{loan.id.toString()}</p>
           </div>
         </div>
-        <Badge variant={loan.status === 'active' ? 'green' : loan.status === 'repaid' ? 'blue' : 'red'} size="sm">
-          {loan.status === 'active' ? <CheckCircle className="w-3 h-3" /> : <Shield className="w-3 h-3" />}
-          {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
+        <Badge variant={status === 'active' ? 'green' : status === 'repaid' ? 'blue' : 'red'} size="sm">
+          {status === 'active' ? <CheckCircle className="w-3 h-3" /> : <Shield className="w-3 h-3" />}
+          {status.charAt(0).toUpperCase() + status.slice(1)}
         </Badge>
       </div>
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 gap-3 mb-4">
         {[
-          { label: 'Collateral', value: `${loan.collateralAmount} ${loan.collateralToken}`, sub: fmt(loan.collateralValueUSD) },
-          { label: 'Borrowed', value: fmt(loan.borrowedAmountUSD), sub: `${loan.collateralToken === 'ETH' ? '40' : '80'}% max LTV` },
+          { label: 'Collateral', value: `${collateralAmountNum.toFixed(2)} ${collateralToken}`, sub: fmt(collateralValueUSD) },
+          { label: 'Borrowed', value: fmt(borrowedAmountUSD), sub: `${loan.isNFT ? '40' : '50'}% max LTV` },
           { label: 'Current LTV', value: `${ltvPct}%`, color: ltvColor },
-          { label: 'Liq. Price', value: loan.liquidationPriceUSD > 0 ? fmt(loan.liquidationPriceUSD) : '—', sub: loan.collateralToken === 'ETH' ? 'ETH/USD' : '—' },
+          { label: 'Liq. Price', value: '—', sub: collateralToken === 'MATIC' ? 'MATIC/USD' : '—' },
         ].map(stat => (
           <div key={stat.label} className="rounded-xl p-3" style={{ background: 'rgba(0,212,170,0.04)', border: '1px solid rgba(0,212,170,0.08)' }}>
             <p className="text-xs text-slate-500 mb-1">{stat.label}</p>
@@ -76,7 +85,7 @@ export function LoanPositionCard({ loan, onRepay }: LoanPositionCardProps) {
       </div>
 
       {/* INR wallet credit callout */}
-      {loan.borrowedAmountUSD > 0 && (
+      {borrowedAmountUSD > 0 && (
         <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl"
           style={{ background: 'rgba(0,212,170,0.06)', border: '1px solid rgba(0,212,170,0.15)' }}>
           <Wallet className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#00D4AA' }} />
@@ -96,19 +105,19 @@ export function LoanPositionCard({ loan, onRepay }: LoanPositionCardProps) {
             className="h-full rounded-full"
             style={{ background: ltvColor }}
             initial={{ width: 0 }}
-            animate={{ width: `${Math.min(loan.ltv * 100, 100)}%` }}
+            animate={{ width: `${Math.min(ltv * 100, 100)}%` }}
             transition={{ duration: 0.8 }}
           />
         </div>
         <div className="flex justify-between text-xs text-slate-600 mt-1">
           <span>0%</span>
           <span style={{ color: ltvColor }}>LTV: {ltvPct}%</span>
-          <span>Max: {loan.collateralToken === 'ETH' ? '40%' : '80%'}</span>
+          <span>Max: {loan.isNFT ? '40%' : '50%'}</span>
         </div>
       </div>
 
       {/* Actions */}
-      {loan.status === 'active' && (
+      {status === 'active' && (
         <button
           onClick={onRepay}
           className="w-full py-2 rounded-xl text-xs font-bold transition-all hover:opacity-90"
@@ -123,10 +132,10 @@ export function LoanPositionCard({ loan, onRepay }: LoanPositionCardProps) {
         </button>
       )}
 
-      {loan.status === 'repaid' && (
+      {status === 'repaid' && (
         <div className="flex items-center gap-2 text-xs text-slate-500">
           <CheckCircle className="w-3 h-3" style={{ color: '#00FF87' }} />
-          Fully repaid · {new Date(loan.createdAt).toLocaleDateString()}
+          Fully repaid · {new Date(Number(loan.createdAt) * 1000).toLocaleDateString()}
         </div>
       )}
     </motion.div>

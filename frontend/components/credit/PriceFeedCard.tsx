@@ -53,7 +53,7 @@ export function PriceFeedCard() {
           ? `₹${(feed.price * INR).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`
           : `$${feed.price.toLocaleString('en-US', { maximumFractionDigits: 4 })}`;
 
-        const chartData = feed.sparkline.map((v, idx) => ({ v, idx }));
+        const chartData = feed.sparkline.map((v: number, idx: number) => ({ v, idx }));
         const isUp = feed.change >= 0;
 
         return (

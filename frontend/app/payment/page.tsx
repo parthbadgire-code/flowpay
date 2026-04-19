@@ -48,6 +48,7 @@ export default function PaymentPage() {
         category: 'Food & Beverage',
         logo: '🏪',
         color: '#00B892',
+        qrData: 'upi://pay?pa=rahulchai@ybl&pn=RahulChai&am=40&cu=INR'
       });
     }, 1800);
   }, [isConnected, tryDemo]);
