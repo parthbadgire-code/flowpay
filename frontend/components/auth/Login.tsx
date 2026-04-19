@@ -14,8 +14,9 @@ export function Login() {
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [agreed, setAgreed] = useState(false);
 
-  const isValid = email.includes('@') && password.length >= 1;
+  const isValid = email.includes('@') && password.length >= 1 && agreed;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -209,6 +210,22 @@ export function Login() {
               'Sign In'
             )}
           </button>
+          {/* Terms Disclaimer with Checkbox */}
+          <div className="flex items-center gap-3 mt-4">
+            <input
+              type="checkbox"
+              id="terms-agree"
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+              className="w-4 h-4 rounded border-slate-700 bg-black/20 text-[#00D4AA] focus:ring-[#00D4AA]/30 cursor-pointer"
+            />
+            <label htmlFor="terms-agree" className="text-[10px] text-slate-500 cursor-pointer select-none">
+              By signing in, I agree to the{' '}
+              <Link href="/terms" className="text-[#00D4AA] hover:underline font-bold">
+                Terms & Conditions
+              </Link>
+            </label>
+          </div>
         </form>
 
         {/* Footer */}

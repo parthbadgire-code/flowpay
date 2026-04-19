@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Bell, Wallet, Shield, LayoutDashboard, ChevronRight } from 'lucide-react';
+import { Wallet, Shield, LayoutDashboard, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWallet } from '@/hooks/useWallet';
@@ -29,30 +29,6 @@ function LogoMark() {
   );
 }
 
-// ─── Nav link ─────────────────────────────────────────────────────────────────
-function NavLink({ href, label, active }: { href: string; label: string; active: boolean }) {
-  return (
-    <Link
-      href={href}
-      className={`relative px-3 py-1.5 text-sm font-medium transition-all duration-200 rounded-xl ${
-        active
-          ? 'text-[#00D4AA]'
-          : 'text-slate-400 hover:text-white hover:bg-white/5'
-      }`}
-    >
-      {label}
-      {active && (
-        <motion.div
-          layoutId="nav-underline"
-          className="absolute -bottom-0.5 left-2 right-2 h-0.5 rounded-full"
-          style={{ background: 'linear-gradient(90deg, #00D4AA, #00FF87)' }}
-          transition={{ type: 'spring', bounce: 0.25, duration: 0.4 }}
-        />
-      )}
-    </Link>
-  );
-}
-
 // ─── Health Factor badge ───────────────────────────────────────────────────────
 function HFBadge({ hf, risk }: { hf: number; risk: string }) {
   const color = risk === 'safe' ? '#00FF87' : risk === 'moderate' ? '#FFA858' : '#FF5E5E';
@@ -75,42 +51,11 @@ export function Navbar() {
   const { isConnected, isDemo, tryDemo, address } = useWallet();
   const { user } = useAuth();
   const { healthFactor, riskLevel, activeLoans } = useCreditLine();
-  const isLandingPage = pathname === '/';
-
-  const navLinks = [
-    { href: '/dashboard', label: 'Dashboard' },
-    { href: '/deposit', label: 'Deposit' },
-    { href: '/lottery', label: 'Lottery' },
-  ];
-
   return (
     <>
-      {/* Demo Banner */}
-      <AnimatePresence>
-        {isDemo && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="fixed top-0 left-0 right-0 z-[60] text-xs font-semibold py-1.5 text-center flex items-center justify-center gap-2"
-            style={{
-              background: 'rgba(255, 168, 88, 0.1)',
-              borderBottom: '1px solid rgba(255, 168, 88, 0.2)',
-              color: '#FFA858',
-            }}
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: '#FFA858' }} />
-              <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: '#FFA858' }} />
-            </span>
-            Demo Mode — Using simulated balances & mock price feeds
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Main Navbar */}
       <motion.nav
-        className={`fixed left-0 right-0 z-50 flex items-center gap-6 px-6 py-3 transition-all duration-300 ${isDemo ? 'top-6' : 'top-0'}`}
+        className="fixed left-0 right-0 z-50 flex items-center gap-6 px-6 py-3 transition-all duration-300 top-0"
         style={{
           background: 'rgba(8,8,8,0.97)',
           borderBottom: '1px solid rgba(184,115,51,0.12)',
@@ -144,20 +89,6 @@ export function Navbar() {
           </span>
         </Link>
 
-        {/* Center Nav Links — only shown when logged in */}
-        {user && (
-          <div className="hidden md:flex items-center gap-1 flex-1">
-            {navLinks.map(link => (
-              <NavLink
-                key={link.href}
-                href={link.href}
-                label={link.label}
-                active={pathname === link.href}
-              />
-            ))}
-          </div>
-        )}
-
         <div className="flex-1 hidden md:block" />
 
         {/* Right Actions */}
@@ -186,20 +117,6 @@ export function Navbar() {
                     <LayoutDashboard className="w-3.5 h-3.5" />
                     Dashboard
                   </Link>
-
-                  {/* Notification bell */}
-                  <button
-                    className="relative p-2 rounded-xl transition-all hover:bg-white/5"
-                    style={{ color: '#64748B' }}
-                  >
-                    <Bell className="w-4.5 h-4.5 w-[18px] h-[18px]" />
-                    {activeLoans.length > 0 && (
-                      <span
-                        className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full"
-                        style={{ background: '#00D4AA' }}
-                      />
-                    )}
-                  </button>
 
                   <ConnectButton
                     showBalance={false}
