@@ -938,7 +938,7 @@ export default function LandingPage() {
                 style={{ background: 'rgba(184,115,51,0.1)', borderColor: 'rgba(184,115,51,0.25)', boxShadow: '0 0 20px rgba(184,115,51,0.1)' }}
               >
                 <Sparkles className="w-3.5 h-3.5" style={{ color: '#B87333' }} />
-                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: '#B87333' }}>Crypto-Backed Credit · Live on Polygon</span>
+                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: '#B87333' }}>Crypto-Backed Credit · Live on Ethereum</span>
               </motion.div>
 
               {/* 3D Depth Headline */}
@@ -1174,18 +1174,36 @@ export default function LandingPage() {
       </section>
 
       {/* ── Footer ────────────────────────────────────────────────────────── */}
-      <footer className="py-12 mt-12 relative z-10" style={{ borderTop: '1px solid rgba(184,115,51,0.1)', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(16px)' }}>
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+      <footer className="py-16 mt-12 relative z-10" style={{ borderTop: '1px solid rgba(184,115,51,0.1)', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(16px)' }}>
+        <div className="max-w-7xl mx-auto px-6 flex flex-col items-center gap-6">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg shadow-lg" style={{ background: 'linear-gradient(135deg, #B87333 0%, #00D4AA 100%)', boxShadow: '0 0 15px rgba(184,115,51,0.4)' }} />
-            <p className="text-white font-black text-xl tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>FlowPay</p>
+            <div className="relative flex-shrink-0">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="32" height="32" rx="9" fill="url(#footer-logo-grad)" />
+                <path d="M8 16L13 11L16 14L20 10L24 16L20 20L16 17L13 20L8 16Z" fill="white" fillOpacity="0.9" />
+                <defs>
+                  <linearGradient id="footer-logo-grad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#00D4AA" />
+                    <stop offset="1" stopColor="#00FF87" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="absolute inset-0 rounded-xl blur-md opacity-40" style={{ background: 'linear-gradient(135deg, #00D4AA, #00FF87)' }} />
+            </div>
+            <span
+              className="font-extrabold text-xl tracking-tight"
+              style={{
+                fontFamily: "'Space Grotesk', sans-serif",
+                background: 'linear-gradient(135deg, #00D4AA 0%, #00FF87 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
+            >
+              FlowPay
+            </span>
           </div>
-          <div className="flex items-center gap-8 text-sm font-medium text-slate-600">
-            {['Protocol', 'Risk Docs', 'Chainlink', 'Privacy'].map(l => (
-              <motion.button key={l} whileHover={{ color: '#B87333', y: -1 }} className="transition-colors">{l}</motion.button>
-            ))}
-          </div>
-          <p className="text-xs text-slate-700 font-medium">© 2026 FlowPay. Non-custodial credit.</p>
+          <p className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.2em]">© 2026 FlowPay. Non-custodial credit.</p>
         </div>
       </footer>
     </div>
