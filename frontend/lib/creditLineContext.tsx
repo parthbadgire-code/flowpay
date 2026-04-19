@@ -1,41 +1,45 @@
 'use client';
 
-import React, {
-  createContext, useContext, useState, useCallback, useEffect, useMemo,
-} from 'react';
-import {
-  CreditLineState, CollateralTokenSymbol, LoanPosition, PriceFeed,
-  LTV_RULES, LIQUIDATION_THRESHOLD, INR_PER_USD,
-  DepositParams, BorrowParams, RepayParams, WithdrawParams,
-  RiskLevel, BorrowSimulation, CurrencyDisplay,
-} from '@/types/creditLine';
-import { mockLoans, mockPriceFeeds, mockCreditTransactions, CreditTransaction } from '@/data/mockLoans';
+import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
+import { useAccount, useReadContract, useReadContracts, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { formatUnits, parseUnits } from 'viem';
+import { ADDRESSES } from '@/src/contracts/addresses';
+import cmArtifact from '@/src/contracts/CollateralManager.json';
+import mInrArtifact from '@/src/contracts/MockINR.json';
+import oracleArtifact from '@/src/contracts/MockPriceOracle.json';
+import { Position, BorrowSimulation, RiskLevel, CurrencyDisplay, INR_PER_USD, LTV_RULES, LIQUIDATION_THRESHOLD } from '@/types/creditLine';
 
-// ─── Context Type ─────────────────────────────────────────────────────────────
+interface CreditTransaction {
+  id: string; type: string; token: string; amount: number; amountUSD: number; timestamp: string; txHash: string; loanId: string;
+}
 
-interface CreditLineContextType extends CreditLineState {
-  transactions: CreditTransaction[];
+interface CreditLineContextType {
+  loans: Position[];
   walletBalanceINR: number;
-  // Actions
-  depositCollateral: (params: DepositParams) => Promise<void>;
-  borrow: (params: BorrowParams) => Promise<void>;
-  repay: (params: RepayParams) => Promise<void>;
-  withdraw: (params: WithdrawParams) => Promise<void>;
+  openPositionERC20: (token: string, amountRaw: bigint, creditRaw: bigint) => Promise<any>;
+  repayPosition: (positionId: bigint, totalRepayRaw: bigint) => Promise<any>;
   setCurrency: (currency: CurrencyDisplay) => void;
-  simulateBorrow: (amountUSD: number) => BorrowSimulation;
+  simulateBorrow: (amountUSD: number, collateralUSD: number) => BorrowSimulation;
   fmt: (usd: number) => string;
-  // Derived
-  activeLoans: LoanPosition[];
-  safeBorrowUSD: number;
+  activeLoans: Position[];
+  availableCreditUSD: number;
+  totalCollateralUSD: number;
+  totalBorrowedUSD: number;
+  healthFactor: number;
   isAtRisk: boolean;
+  safeBorrowUSD: number;
+  isLoading: boolean;
+  riskLevel: RiskLevel;
+  currency: CurrencyDisplay;
+  liquidationPrice: number;
+  collateralRatio: number;
+  prices: any;
 }
 
 const CreditLineContext = createContext<CreditLineContextType | null>(null);
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 function computeHealthFactor(collateralUSD: number, borrowedUSD: number): number {
-  if (borrowedUSD === 0) return 999;
+  if (borrowedUSD === 0 || isNaN(borrowedUSD)) return 999;
   return (collateralUSD * LIQUIDATION_THRESHOLD) / borrowedUSD;
 }
 
@@ -45,59 +49,164 @@ function computeRiskLevel(hf: number): RiskLevel {
   return 'dangerous';
 }
 
-function computeLiquidationPrice(
-  token: CollateralTokenSymbol,
-  amount: number,
-  borrowedUSD: number,
-): number {
-  if (amount === 0 || token === 'USDC') return 0;
-  return borrowedUSD / (amount * LIQUIDATION_THRESHOLD);
-}
-
-// ─── Provider ─────────────────────────────────────────────────────────────────
-
 export function CreditLineProvider({ children }: { children: React.ReactNode }) {
-  const [loans, setLoans] = useState<LoanPosition[]>(mockLoans);
-  const [transactions, setTransactions] = useState<CreditTransaction[]>(mockCreditTransactions);
-  const [collateral, setCollateral] = useState({ eth: 0.5, usdc: 1000 });
-  const [borrowed, setBorrowed] = useState({ usdc: 1300 }); // 580 + 720
-  const [prices] = useState(mockPriceFeeds);
+  const { address } = useAccount();
   const [currency, setCurrencyState] = useState<CurrencyDisplay>('USD');
-  const [isLoading, setIsLoading] = useState(false);
-  // FlowPay wallet INR balance — funded by borrow actions
-  const [walletBalanceINR, setWalletBalanceINR] = useState<number>(1300 * INR_PER_USD); // pre-seeded from existing loans
+  const [activeTx, setActiveTx] = useState<string | null>(null);
 
-  // ── Computed Values ──
+  // Wagmi reads
+  const { data: userPosIds } = useReadContract({
+    address: ADDRESSES.CollateralManager as `0x${string}`,
+    abi: cmArtifact.abi,
+    functionName: 'getUserPositions',
+    args: address ? [address] : undefined,
+    query: { enabled: !!address }
+  });
 
-  const totalCollateralUSD = useMemo(() =>
-    collateral.eth * prices.eth.priceUSD + collateral.usdc * prices.usdc.priceUSD,
-  [collateral, prices]);
+  const { data: mInrBalance } = useReadContract({
+    address: ADDRESSES.MockINR as `0x${string}`,
+    abi: mInrArtifact.abi,
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+    query: { enabled: !!address, refetchInterval: 5000 }
+  });
 
-  const maxBorrowUSD = useMemo(() =>
-    collateral.eth * prices.eth.priceUSD * LTV_RULES.ETH +
-    collateral.usdc * prices.usdc.priceUSD * LTV_RULES.USDC,
-  [collateral, prices]);
+  // Multicall to fetch position structs
+  const contracts = useMemo(() => {
+    if (!userPosIds) return [];
+    return (userPosIds as bigint[]).map(id => ({
+      address: ADDRESSES.CollateralManager as `0x${string}`,
+      abi: cmArtifact.abi as any,
+      functionName: 'positions',
+      args: [id],
+    }));
+  }, [userPosIds]);
 
-  const totalBorrowedUSD = borrowed.usdc;
+  const { data: rawPositions } = useReadContracts({
+    contracts,
+    query: { enabled: contracts.length > 0, refetchInterval: 5000 }
+  });
 
+  const loans: Position[] = useMemo(() => {
+    if (!rawPositions) return [];
+    return rawPositions
+      .map(r => r.result as any[])
+      .filter(Boolean)
+      .map(arr => ({
+        id: arr[0],
+        borrower: arr[1],
+        collateralContract: arr[2],
+        collateralAmount: arr[3],
+        isNFT: arr[4],
+        creditIssued: arr[5],
+        originationFee: arr[6],
+        createdAt: arr[7],
+        repayBy: arr[8],
+        active: arr[9],
+        liquidated: arr[10]
+      }));
+  }, [rawPositions]);
+
+  // Multicall Oracle Prices
+  const { data: maticPriceRaw } = useReadContract({
+    address: ADDRESSES.MockOracle as `0x${string}`,
+    abi: oracleArtifact.abi,
+    functionName: 'getPrice',
+    args: [ADDRESSES.MockMATIC],
+    query: { refetchInterval: 10000 }
+  });
+
+  // Calculate generic derived states strictly from blockchain array
+  const totalCollateralUSD = useMemo(() => {
+    let sum = 0;
+    loans.filter(l => l.active && !l.isNFT).forEach(l => {
+      // Very basic price fallback simulation due to mock oracle limits
+      const amt = Number(formatUnits(l.collateralAmount, 18));
+      const price = maticPriceRaw ? Number(formatUnits(maticPriceRaw as bigint, 8)) / INR_PER_USD : 0.8;
+      sum += amt * price;
+    });
+    return sum;
+  }, [loans, maticPriceRaw]);
+
+  const totalBorrowedUSD = useMemo(() => {
+    let sum = 0;
+    loans.filter(l => l.active).forEach(l => {
+      sum += Number(formatUnits(l.creditIssued, 18)) / INR_PER_USD;
+    });
+    return sum;
+  }, [loans]);
+
+  const maxBorrowUSD = totalCollateralUSD * LTV_RULES.ERC20;
   const availableCreditUSD = Math.max(0, maxBorrowUSD - totalBorrowedUSD);
-
-  const healthFactor = useMemo(() =>
-    computeHealthFactor(totalCollateralUSD, totalBorrowedUSD),
-  [totalCollateralUSD, totalBorrowedUSD]);
-
+  const healthFactor = computeHealthFactor(totalCollateralUSD, totalBorrowedUSD);
   const riskLevel = computeRiskLevel(healthFactor);
+  const isAtRisk = healthFactor < 1.5 && healthFactor !== 999;
+  const activeLoans = loans.filter(l => l.active);
+  const safeBorrowUSD = Math.min(availableCreditUSD, availableCreditUSD * 0.7);
+  
+  const collateralRatio = totalBorrowedUSD > 0 ? totalCollateralUSD / totalBorrowedUSD : 0;
+  const liquidationPrice = 1250; // Mock ETH price for UI fallback
+  const prices = useMemo(() => ({
+    eth: { priceUSD: 3100, change24h: 2.5, sparkline: [3000, 3050, 3100, 3080, 3150, 3100] },
+    usdc: { priceUSD: 1.0, change24h: 0.01, sparkline: [1, 1, 1, 1, 1, 1] }
+  }), []);
 
-  const collateralRatio = totalBorrowedUSD > 0
-    ? (totalCollateralUSD / totalBorrowedUSD) * 100
-    : 999;
+  const walletBalanceINR = mInrBalance ? Number(formatUnits(mInrBalance as bigint, 18)) : 0;
 
-  // Blended liquidation price for ETH (dominant collateral)
-  const liquidationPrice = collateral.eth > 0
-    ? computeLiquidationPrice('ETH', collateral.eth, totalBorrowedUSD * (LTV_RULES.ETH))
-    : 0;
+  const { writeContractAsync } = useWriteContract();
 
-  // ── Formatting Helper ──
+  const openPositionERC20 = useCallback(async (token: string, amountRaw: bigint, creditRaw: bigint) => {
+    if (!address) throw new Error("Not connected");
+    const tx = await writeContractAsync({
+      address: ADDRESSES.CollateralManager as `0x${string}`,
+      abi: cmArtifact.abi,
+      functionName: 'openPositionERC20',
+      args: [token, amountRaw, creditRaw],
+    });
+    setActiveTx(tx);
+    return tx;
+  }, [address, writeContractAsync]);
+
+  const repayPosition = useCallback(async (positionId: bigint, totalRepayRaw: bigint) => {
+    if (!address) throw new Error("Not connected");
+    
+    // Step 1: Approve mINR
+    await writeContractAsync({
+      address: ADDRESSES.MockINR as `0x${string}`,
+      abi: mInrArtifact.abi,
+      functionName: 'approve',
+      args: [ADDRESSES.CollateralManager, totalRepayRaw],
+    });
+
+    // We assume a naive delay between txs for Demo simplicity rather than watching receipt here, 
+    // real PROD requires 2 distinct user-waits.
+    await new Promise(r => setTimeout(r, 6000));
+    
+    // Step 2: Repay
+    const tx = await writeContractAsync({
+      address: ADDRESSES.CollateralManager as `0x${string}`,
+      abi: cmArtifact.abi,
+      functionName: 'repayPosition',
+      args: [positionId],
+    });
+    setActiveTx(tx);
+    return tx;
+  }, [address, writeContractAsync]);
+
+  const simulateBorrow = useCallback((amountUSD: number, colUSD: number): BorrowSimulation => {
+    const newBorrowed = totalBorrowedUSD + amountUSD;
+    const newColUSD = totalCollateralUSD + colUSD;
+    const newLTV = newColUSD > 0 ? newBorrowed / newColUSD : 0;
+    const newHF = computeHealthFactor(newColUSD, newBorrowed);
+    const newRisk = computeRiskLevel(newHF);
+    return {
+      borrowAmount: amountUSD,
+      resultingLTV: newLTV,
+      resultingHF: newHF,
+      riskLevel: newRisk,
+      isSafe: newHF >= 1.5,
+    };
+  }, [totalBorrowedUSD, totalCollateralUSD]);
 
   const fmt = useCallback((usd: number): string => {
     if (currency === 'INR') {
@@ -106,212 +215,14 @@ export function CreditLineProvider({ children }: { children: React.ReactNode }) 
     return `$${usd.toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
   }, [currency]);
 
-  // ── Simulate Borrow ──
-
-  const simulateBorrow = useCallback((amountUSD: number): BorrowSimulation => {
-    const newBorrowed = totalBorrowedUSD + amountUSD;
-    const newLTV = totalCollateralUSD > 0 ? newBorrowed / totalCollateralUSD : 0;
-    const newHF = computeHealthFactor(totalCollateralUSD, newBorrowed);
-    const newRisk = computeRiskLevel(newHF);
-    return {
-      borrowAmount: amountUSD,
-      resultingLTV: newLTV,
-      resultingHF: newHF,
-      riskLevel: newRisk,
-      isSafe: newHF >= 1.5 && amountUSD <= availableCreditUSD,
-    };
-  }, [totalBorrowedUSD, totalCollateralUSD, availableCreditUSD]);
-
-  // ── Actions ──
-
-  const depositCollateral = useCallback(async ({ token, amount }: DepositParams) => {
-    setIsLoading(true);
-    await new Promise(r => setTimeout(r, 1500));
-    const priceUSD = token === 'ETH' ? prices.eth.priceUSD : prices.usdc.priceUSD;
-    const valueUSD = amount * priceUSD;
-    const maxBorrow = valueUSD * LTV_RULES[token];
-    const existingLoan = loans.find(l => l.collateralToken === token && l.status === 'active');
-    const loanId = existingLoan?.loanId ?? `LOAN-${Date.now()}`;
-
-    if (existingLoan) {
-      setLoans(prev => prev.map(l =>
-        l.loanId === loanId
-          ? {
-              ...l,
-              collateralAmount: l.collateralAmount + amount,
-              collateralValueUSD: l.collateralValueUSD + valueUSD,
-              ltv: l.borrowedAmountUSD / (l.collateralValueUSD + valueUSD),
-            }
-          : l
-      ));
-    } else {
-      const newLoan: LoanPosition = {
-        loanId,
-        walletAddress: '',
-        collateralToken: token,
-        collateralAmount: amount,
-        collateralValueUSD: valueUSD,
-        borrowedAmountUSD: 0,
-        ltv: 0,
-        liquidationPriceUSD: 0,
-        status: 'active',
-        createdAt: new Date().toISOString(),
-      };
-      setLoans(prev => [newLoan, ...prev]);
-    }
-
-    setCollateral(prev => ({
-      ...prev,
-      [token.toLowerCase()]: prev[token.toLowerCase() as 'eth' | 'usdc'] + amount,
-    }));
-
-    const tx: CreditTransaction = {
-      id: `TX-${Date.now()}`,
-      type: 'deposit',
-      token,
-      amount,
-      amountUSD: valueUSD,
-      timestamp: new Date().toISOString(),
-      txHash: `0x${Math.random().toString(16).slice(2, 18)}`,
-      loanId,
-    };
-    setTransactions(prev => [tx, ...prev]);
-    setIsLoading(false);
-  }, [loans, prices]);
-
-  const borrow = useCallback(async ({ amountUSD }: BorrowParams) => {
-    setIsLoading(true);
-    await new Promise(r => setTimeout(r, 1200));
-    if (amountUSD > availableCreditUSD) throw new Error('Exceeds borrow limit');
-    setBorrowed(prev => ({ usdc: prev.usdc + amountUSD }));
-
-    // ── Credit the user's FlowPay wallet in INR ──
-    const creditINR = parseFloat((amountUSD * INR_PER_USD).toFixed(2));
-    setWalletBalanceINR(prev => prev + creditINR);
-
-    const activeLoan = loans.find(l => l.status === 'active');
-    const loanId = activeLoan?.loanId ?? 'LOAN-UNKNOWN';
-    setLoans(prev => prev.map(l =>
-      l.loanId === loanId
-        ? { ...l, borrowedAmountUSD: l.borrowedAmountUSD + amountUSD, ltv: (l.borrowedAmountUSD + amountUSD) / l.collateralValueUSD }
-        : l
-    ));
-
-    const tx: CreditTransaction = {
-      id: `TX-${Date.now()}`,
-      type: 'borrow',
-      token: 'USDC',
-      amount: amountUSD,
-      amountUSD,
-      timestamp: new Date().toISOString(),
-      txHash: `0x${Math.random().toString(16).slice(2, 18)}`,
-      loanId,
-    };
-    setTransactions(prev => [tx, ...prev]);
-    setIsLoading(false);
-  }, [availableCreditUSD, loans]);
-
-  const repay = useCallback(async ({ amountUSD }: RepayParams) => {
-    setIsLoading(true);
-    await new Promise(r => setTimeout(r, 1200));
-    const repayAmt = Math.min(amountUSD, totalBorrowedUSD);
-    setBorrowed(prev => ({ usdc: Math.max(0, prev.usdc - repayAmt) }));
-
-    const activeLoan = loans.find(l => l.status === 'active' && l.borrowedAmountUSD > 0);
-    const loanId = activeLoan?.loanId ?? 'LOAN-UNKNOWN';
-    setLoans(prev => prev.map(l => {
-      if (l.loanId !== loanId) return l;
-      const newBorrowed = Math.max(0, l.borrowedAmountUSD - repayAmt);
-      return {
-        ...l,
-        borrowedAmountUSD: newBorrowed,
-        ltv: newBorrowed / l.collateralValueUSD,
-        status: newBorrowed === 0 ? 'repaid' : 'active',
-      };
-    }));
-
-    const tx: CreditTransaction = {
-      id: `TX-${Date.now()}`,
-      type: 'repay',
-      token: 'USDC',
-      amount: repayAmt,
-      amountUSD: repayAmt,
-      timestamp: new Date().toISOString(),
-      txHash: `0x${Math.random().toString(16).slice(2, 18)}`,
-      loanId,
-    };
-    setTransactions(prev => [tx, ...prev]);
-    setIsLoading(false);
-  }, [totalBorrowedUSD, loans]);
-
-  const withdraw = useCallback(async ({ token, amount }: WithdrawParams) => {
-    setIsLoading(true);
-    await new Promise(r => setTimeout(r, 1200));
-    const key = token.toLowerCase() as 'eth' | 'usdc';
-    setCollateral(prev => ({ ...prev, [key]: Math.max(0, prev[key] - amount) }));
-
-    const tx: CreditTransaction = {
-      id: `TX-${Date.now()}`,
-      type: 'withdraw',
-      token,
-      amount,
-      amountUSD: amount * (token === 'ETH' ? prices.eth.priceUSD : prices.usdc.priceUSD),
-      timestamp: new Date().toISOString(),
-      txHash: `0x${Math.random().toString(16).slice(2, 18)}`,
-      loanId: '',
-    };
-    setTransactions(prev => [tx, ...prev]);
-    setIsLoading(false);
-  }, [prices]);
-
-  const setCurrency = useCallback((c: CurrencyDisplay) => setCurrencyState(c), []);
-
-  // ── Derived helpers exposed on context (avoids needing a separate hook) ──
-  const activeLoans = loans.filter(l => l.status === 'active');
-  const safeBorrowUSD = Math.min(availableCreditUSD, availableCreditUSD * 0.7);
-  const isAtRisk = healthFactor < 1.5 && healthFactor !== 999;
-
   const value: CreditLineContextType = useMemo(() => ({
-    collateral,
-    borrowed,
-    loans,
-    prices,
-    totalCollateralUSD,
-    totalBorrowedUSD,
-    availableCreditUSD,
-    maxBorrowUSD,
-    healthFactor,
-    liquidationPrice,
-    riskLevel,
-    collateralRatio,
-    currency,
-    isLoading,
-    transactions,
-    walletBalanceINR,
-    activeLoans,
-    safeBorrowUSD,
-    isAtRisk,
-    depositCollateral,
-    borrow,
-    repay,
-    withdraw,
-    setCurrency,
-    simulateBorrow,
-    fmt,
-  }), [
-    collateral, borrowed, loans, prices, totalCollateralUSD, totalBorrowedUSD,
-    availableCreditUSD, maxBorrowUSD, healthFactor, liquidationPrice, riskLevel,
-    collateralRatio, currency, isLoading, transactions, walletBalanceINR,
-    activeLoans, safeBorrowUSD, isAtRisk,
-    depositCollateral, borrow, repay, withdraw, setCurrency,
-    simulateBorrow, fmt,
-  ]);
+    loans, activeLoans,
+    totalCollateralUSD, totalBorrowedUSD, maxBorrowUSD, availableCreditUSD, healthFactor, isAtRisk, safeBorrowUSD,
+    walletBalanceINR, openPositionERC20, repayPosition, setCurrency: setCurrencyState, simulateBorrow, fmt, isLoading: !!activeTx, riskLevel, currency,
+    liquidationPrice, collateralRatio, prices
+  }), [loans, activeLoans, totalCollateralUSD, totalBorrowedUSD, maxBorrowUSD, availableCreditUSD, healthFactor, isAtRisk, safeBorrowUSD, walletBalanceINR, openPositionERC20, repayPosition, simulateBorrow, fmt, activeTx, riskLevel, currency, liquidationPrice, collateralRatio, prices]);
 
-  return (
-    <CreditLineContext.Provider value={value}>
-      {children}
-    </CreditLineContext.Provider>
-  );
+  return <CreditLineContext.Provider value={value}>{children}</CreditLineContext.Provider>;
 }
 
 export function useCreditLineCtx() {

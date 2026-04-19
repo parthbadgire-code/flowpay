@@ -7,7 +7,7 @@
     "compile": "hardhat compile",
     "test": "hardhat test",
     "deploy:local": "hardhat run scripts/deploy.js --network hardhat",
-    "deploy:amoy": "hardhat run scripts/deploy.js --network polygonAmoy",
+    "deploy:sepolia": "hardhat run scripts/deploy.js --network sepolia",
     "node": "hardhat node"
   },
   "keywords": [],

@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 // Interfaces for our custom mock contracts
 interface IMockINR {
     function mint(address to, uint256 amount) external;
-    function burnFrom(address from, uint256 amount) external;
+    function burn(address from, uint256 amount) external;
     function balanceOf(address account) external view returns (uint256);
 }
 
@@ -191,9 +191,9 @@ contract CollateralManager is Ownable, ReentrancyGuard {
         // To strictly match "Burn totalRepay mINR from msg.sender" AND "treasury balance increased by interest":
         // We can just burn pos.creditIssued, and transfer interest to address(this).
         // Let's do exact operations:
-        mINR.burnFrom(msg.sender, pos.creditIssued); 
+        mINR.burn(msg.sender, pos.creditIssued); 
         if (interest > 0) {
-            // Need normal transferFrom because standard burn doesn't relocate tokens
+            // Collect protocol interest directly into treasury
             IERC20(address(mINR)).transferFrom(msg.sender, address(this), interest);
         }
 
@@ -241,7 +241,7 @@ contract CollateralManager is Ownable, ReentrancyGuard {
         }
 
         // Action 1: Burn liquidator's mINR to clear bad debt
-        mINR.burnFrom(msg.sender, debtToRepay);
+        mINR.burn(msg.sender, debtToRepay);
 
         // Action 2: Send full collateral to liquidator (they receive collateral containing the bonus margin)
         if (pos.isNFT) {

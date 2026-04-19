@@ -71,7 +71,7 @@ export function FlowPayProvider({ children }: { children: React.ReactNode }) {
   const account = useAccount(); // Wagmi
   
   const [isForcedDemo, setIsForcedDemo] = useState(false);
-  const mode = (account.isConnected && !isForcedDemo) ? 'real' : 'demo';
+  const mode: 'demo' | 'real' = (account.isConnected && !isForcedDemo) ? 'real' : 'demo';
   
   // Base State
   const [flowPayInrBalance, setFlowPayInrBalance] = useState(0);

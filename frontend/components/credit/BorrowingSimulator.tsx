@@ -8,7 +8,8 @@ export function BorrowingSimulator() {
   const { availableCreditUSD, safeBorrowUSD, simulateBorrow, fmt, currency } = useCreditLine();
   const max = Math.floor(availableCreditUSD);
   const [amount, setAmount] = useState(Math.floor(safeBorrowUSD));
-  const sim = simulateBorrow(amount);
+  // Provide 0 for collateral mapping in the demo
+  const sim = simulateBorrow(amount, 0);
 
   const ltvPct = (sim.resultingLTV * 100).toFixed(1);
   const hfColor = sim.riskLevel === 'safe' ? '#34D399' : sim.riskLevel === 'moderate' ? '#FBBF24' : '#F87171';
