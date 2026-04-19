@@ -2,6 +2,8 @@
 
 Welcome to **FlowPay**, a decentralized finance (DeFi) on-chain borrowing and collateralization protocol. FlowPay empowers users to leverage their cryptocurrency assets to unlock working capital by minting or borrowing stablecoins, all without needing to sell their underlying holdings.
 
+🌐 **Live Demo:** [Click Me](https://flowpaynew.vercel.app/)
+
 ## 📖 Table of Contents
 - [About the Project](#about-the-project)
 - [Key Features](#key-features)
@@ -132,7 +134,7 @@ Follow these instructions to get a copy of the project up and running on your lo
 
 ### Prerequisites
 You must have the following installed:
-- [Node.js](https://nodejs.org/en/) (v18 or higher)
+- [Next.js](https://nextjs.org/) (v14 or higher)
 - [Git](https://git-scm.com/)
 - A package manager: `npm`, `yarn`, or `pnpm`.
 - A Web3 extension wallet (e.g., MetaMask).
