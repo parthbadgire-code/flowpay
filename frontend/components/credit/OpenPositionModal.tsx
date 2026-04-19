@@ -16,7 +16,7 @@ interface OpenPositionModalProps {
 }
 
 export function OpenPositionModal({ isOpen, onClose }: OpenPositionModalProps) {
-  const { openPositionERC20, openPositionNFT, currency, simulateBorrow } = useCreditLine();
+  const { openPositionERC20, openPositionNFT, currency, simulateBorrow, collateralBalances } = useCreditLine();
   const { writeContractAsync } = useWriteContract();
   const { address } = useAccount();
   const publicClient = usePublicClient();
@@ -142,7 +142,10 @@ export function OpenPositionModal({ isOpen, onClose }: OpenPositionModalProps) {
                  </div>
                  <input type={token === 'NFT' ? "text" : "number"} value={collateralAmount} onChange={e => setCollateralAmount(e.target.value)} placeholder={token === 'NFT' ? "Enter Token ID" : "0.00"}
                     className="w-full rounded-2xl py-3 px-4 text-lg font-bold text-white bg-black/40 border border-white/10 focus:outline-none" />
-                 {collateralValueUSD > 0 && <p className="text-xs text-slate-400 mt-1">Value: {displayCollateral}</p>}
+                 <div className="flex items-center justify-between mt-1">
+                   {collateralValueUSD > 0 ? <p className="text-xs text-slate-400">Value: {displayCollateral}</p> : <div></div>}
+                   {token !== 'NFT' && <p className="text-xs font-bold text-[#00D4AA]">Balance: {collateralBalances[token]?.toFixed(2) || '0.00'} {token}</p>}
+                 </div>
               </div>
 
               {/* 2. Borrow Credit Side */}
@@ -161,7 +164,14 @@ export function OpenPositionModal({ isOpen, onClose }: OpenPositionModalProps) {
                 </div>
               )}
 
-              <button onClick={handleOpenPosition} disabled={!collateralAmount || !borrowAmountUSD || amtBorrowed > maxBorrowUSD || isProcessing}
+              <button onClick={handleOpenPosition} 
+                disabled={
+                  !collateralAmount || 
+                  !borrowAmountUSD || 
+                  amtBorrowed > maxBorrowUSD || 
+                  (token !== 'NFT' && parseFloat(collateralAmount) > (collateralBalances[token as keyof typeof collateralBalances] || 0)) ||
+                  isProcessing
+                }
                 className="w-full py-4 rounded-2xl text-sm font-black disabled:opacity-40 flex items-center justify-center gap-2"
                 style={{ background: 'linear-gradient(135deg, #00D4AA 0%, #00FF87 100%)', color: '#0D1412' }}>
                 {isProcessing ? "Awaiting Metamask Approvals..." : "Open Position (Atomic CDP)"}

@@ -16,6 +16,7 @@ interface CreditTransaction {
 interface CreditLineContextType {
   loans: Position[];
   walletBalanceINR: number;
+  collateralBalances: { MATIC: number; USDC: number; ETH: number };
   openPositionERC20: (token: string, amountRaw: bigint, creditRaw: bigint) => Promise<any>;
   openPositionNFT: (nftContract: string, tokenIdRaw: bigint, creditRaw: bigint) => Promise<any>;
   repayPosition: (positionId: bigint, totalRepayRaw: bigint) => Promise<any>;
@@ -71,6 +72,27 @@ export function CreditLineProvider({ children }: { children: React.ReactNode }) 
     args: address ? [address] : undefined,
     query: { enabled: !!address, refetchInterval: 5000 }
   });
+
+  // Multicall to fetch ERC20 balances
+  const tokenContracts = useMemo(() => {
+    if (!address) return [];
+    return [
+      { address: ADDRESSES.MockMATIC as `0x${string}`, abi: mInrArtifact.abi as any, functionName: 'balanceOf', args: [address] },
+      { address: ADDRESSES.MockUSDC as `0x${string}`, abi: mInrArtifact.abi as any, functionName: 'balanceOf', args: [address] },
+      { address: ADDRESSES.MockETH as `0x${string}`, abi: mInrArtifact.abi as any, functionName: 'balanceOf', args: [address] }
+    ];
+  }, [address]);
+
+  const { data: rawTokenBalances } = useReadContracts({
+    contracts: tokenContracts,
+    query: { enabled: tokenContracts.length > 0, refetchInterval: 5000 }
+  });
+
+  const collateralBalances = useMemo(() => ({
+    MATIC: rawTokenBalances?.[0]?.result ? Number(formatUnits(rawTokenBalances[0].result as bigint, 18)) : 0,
+    USDC: rawTokenBalances?.[1]?.result ? Number(formatUnits(rawTokenBalances[1].result as bigint, 18)) : 0,
+    ETH: rawTokenBalances?.[2]?.result ? Number(formatUnits(rawTokenBalances[2].result as bigint, 18)) : 0
+  }), [rawTokenBalances]);
 
   // Multicall to fetch position structs
   const contracts = useMemo(() => {
@@ -231,9 +253,9 @@ export function CreditLineProvider({ children }: { children: React.ReactNode }) 
   const value: CreditLineContextType = useMemo(() => ({
     loans, activeLoans,
     totalCollateralUSD, totalBorrowedUSD, maxBorrowUSD, availableCreditUSD, healthFactor, isAtRisk, safeBorrowUSD,
-    walletBalanceINR, openPositionERC20, openPositionNFT, repayPosition, setCurrency: setCurrencyState, simulateBorrow, fmt, isLoading: !!activeTx, riskLevel, currency,
+    walletBalanceINR, collateralBalances, openPositionERC20, openPositionNFT, repayPosition, setCurrency: setCurrencyState, simulateBorrow, fmt, isLoading: !!activeTx, riskLevel, currency,
     liquidationPrice, collateralRatio, prices
-  }), [loans, activeLoans, totalCollateralUSD, totalBorrowedUSD, maxBorrowUSD, availableCreditUSD, healthFactor, isAtRisk, safeBorrowUSD, walletBalanceINR, openPositionERC20, openPositionNFT, repayPosition, simulateBorrow, fmt, activeTx, riskLevel, currency, liquidationPrice, collateralRatio, prices]);
+  }), [loans, activeLoans, totalCollateralUSD, totalBorrowedUSD, maxBorrowUSD, availableCreditUSD, healthFactor, isAtRisk, safeBorrowUSD, walletBalanceINR, collateralBalances, openPositionERC20, openPositionNFT, repayPosition, simulateBorrow, fmt, activeTx, riskLevel, currency, liquidationPrice, collateralRatio, prices]);
 
   return <CreditLineContext.Provider value={value}>{children}</CreditLineContext.Provider>;
 }
