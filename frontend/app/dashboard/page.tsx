@@ -71,6 +71,7 @@ export default function DashboardPage() {
     collateralRatio,
     currency,
     setCurrency,
+    walletBalanceINR,
     fmt,
   } = useCreditLine();
 
@@ -312,50 +313,21 @@ export default function DashboardPage() {
               <LiquidationAlert />
               <PortfolioSummary />
 
+              {/* ── Row 1: Quick Actions + FlowPay Wallet + Price Feed ── */}
               <div className="grid lg:grid-cols-3 gap-6">
+                {/* Left col: Quick Actions + Loans */}
                 <div className="lg:col-span-2 space-y-6">
+                  {/* Quick Actions */}
                   <div>
-                    <p
-                      className="text-[10px] font-bold uppercase tracking-[0.18em] mb-3"
-                      style={{ color: COPPER }}
-                    >
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] mb-3" style={{ color: COPPER }}>
                       Quick Actions
                     </p>
-
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       {[
-                        {
-                          label: 'Deposit',
-                          icon: <ArrowDownToLine className="w-5 h-5" />,
-                          color: TEAL,
-                          bg: 'rgba(0,0,0,0.8)',
-                          border: `${TEAL}30`,
-                          action: () => setDepositOpen(true),
-                        },
-                        {
-                          label: 'Borrow',
-                          icon: <TrendingUp className="w-5 h-5" />,
-                          color: COPPER,
-                          bg: 'rgba(0,0,0,0.8)',
-                          border: `${COPPER}30`,
-                          action: () => setBorrowOpen(true),
-                        },
-                        {
-                          label: 'Repay',
-                          icon: <ArrowUpLeft className="w-5 h-5" />,
-                          color: MINT,
-                          bg: 'rgba(0,0,0,0.8)',
-                          border: `${MINT}30`,
-                          action: () => setRepayOpen(true),
-                        },
-                        {
-                          label: 'Withdraw',
-                          icon: <Unlock className="w-5 h-5" />,
-                          color: RUST,
-                          bg: 'rgba(0,0,0,0.8)',
-                          border: `${RUST}35`,
-                          action: () => setWithdrawOpen(true),
-                        },
+                        { label: 'Deposit',  icon: <ArrowDownToLine className="w-5 h-5" />, color: TEAL,   bg: 'rgba(0,0,0,0.8)', border: `${TEAL}30`,   action: () => setDepositOpen(true) },
+                        { label: 'Borrow',   icon: <TrendingUp className="w-5 h-5" />,     color: COPPER, bg: 'rgba(0,0,0,0.8)', border: `${COPPER}30`, action: () => setBorrowOpen(true) },
+                        { label: 'Repay',    icon: <ArrowUpLeft className="w-5 h-5" />,    color: MINT,   bg: 'rgba(0,0,0,0.8)', border: `${MINT}30`,   action: () => setRepayOpen(true) },
+                        { label: 'Withdraw', icon: <Unlock className="w-5 h-5" />,         color: RUST,   bg: 'rgba(0,0,0,0.8)', border: `${RUST}35`,   action: () => setWithdrawOpen(true) },
                       ].map((action) => (
                         <motion.button
                           key={action.label}
@@ -367,25 +339,18 @@ export default function DashboardPage() {
                             color: action.color,
                             background: action.bg,
                             border: `1px solid ${action.border}`,
-                            boxShadow:
-                              'inset 0 1px 0 rgba(255,255,255,0.04)',
+                            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
                           }}
                         >
                           <div
                             className="w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform"
-                            style={{
-                              background: `${action.color}12`,
-                              border: `1px solid ${action.color}25`,
-                            }}
+                            style={{ background: `${action.color}12`, border: `1px solid ${action.color}25` }}
                           >
                             {action.icon}
                           </div>
-
                           <span
                             className="text-xs font-bold text-white/60 group-hover:text-white transition-colors"
-                            style={{
-                              fontFamily: "'Space Grotesk', sans-serif",
-                            }}
+                            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
                           >
                             {action.label}
                           </span>
@@ -393,69 +358,116 @@ export default function DashboardPage() {
                       ))}
                     </div>
                   </div>
+
+                  {/* Active Loan Positions */}
+                  {activeLoans.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] mb-3" style={{ color: COPPER }}>
+                        Active Positions
+                      </p>
+                      <div className="space-y-3">
+                        {activeLoans.filter(l => l.status === 'active').map(loan => (
+                          <LoanPositionCard
+                            key={loan.loanId}
+                            loan={loan}
+                            onRepay={() => setRepayOpen(true)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Borrowing Simulator */}
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] mb-3" style={{ color: COPPER }}>
+                      Borrow Simulator
+                    </p>
+                    <BorrowingSimulator />
+                  </div>
+
+                  {/* Loan History Table */}
+                  {activeLoans.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] mb-3" style={{ color: COPPER }}>
+                        Loan History
+                      </p>
+                      <div className="rounded-2xl overflow-hidden" style={cardBg}>
+                        <LoanTable onRepay={() => setRepayOpen(true)} />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
+                {/* Right col: Wallet + Price Feed + Health + Risk */}
                 <div className="space-y-5">
+                  {/* FlowPay INR Wallet */}
+                  <FlowPayWalletCard />
+
+                  {/* Credit Summary */}
                   <div className="rounded-2xl p-5" style={cardBg}>
                     <div className="flex items-center gap-2 mb-4">
-                      <div
-                        className="w-1 h-3 rounded-full"
-                        style={{ background: RUST }}
-                      />
-                      <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white">
-                        Credit Summary
-                      </p>
+                      <div className="w-1 h-3 rounded-full" style={{ background: RUST }} />
+                      <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white">Credit Summary</p>
                     </div>
-
                     <div className="space-y-3">
                       {[
-                        {
-                          label: 'Total Collateral',
-                          value: fmt(totalCollateralUSD),
-                          color: TEAL,
-                        },
-                        {
-                          label: 'Total Borrowed',
-                          value: fmt(totalBorrowedUSD),
-                          color: '#627EEA',
-                        },
-                        {
-                          label: 'Available Credit',
-                          value: fmt(availableCreditUSD),
-                          color: MINT,
-                        },
+                        { label: 'Total Collateral', value: fmt(totalCollateralUSD),  color: TEAL },
+                        { label: 'Total Borrowed',   value: fmt(totalBorrowedUSD),    color: '#627EEA' },
+                        { label: 'Available Credit', value: fmt(availableCreditUSD),  color: MINT },
                         {
                           label: 'Health Factor',
-                          value:
-                            healthFactor === 999
-                              ? '∞'
-                              : healthFactor.toFixed(2),
+                          value: healthFactor === 999 ? '∞' : healthFactor.toFixed(2),
                           color: hfColor,
+                        },
+                        {
+                          label: 'Liquidation Price',
+                          value: liquidationPrice > 0 ? `$${liquidationPrice.toFixed(0)}` : '—',
+                          color: ORANGE,
+                        },
+                        {
+                          label: 'Collateral Ratio',
+                          value: collateralRatio > 0 ? `${(collateralRatio * 100).toFixed(1)}%` : '—',
+                          color: COPPER,
                         },
                       ].map((item) => (
                         <div
                           key={item.label}
                           className="flex justify-between items-center py-2"
-                          style={{
-                            borderBottom:
-                              '1px solid rgba(255,255,255,0.04)',
-                          }}
+                          style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
                         >
-                          <span className="text-xs text-slate-600">
-                            {item.label}
-                          </span>
-                          <span
-                            className="text-sm font-black"
-                            style={{
-                              color: item.color,
-                              fontFamily: "'Space Grotesk', sans-serif",
-                            }}
-                          >
+                          <span className="text-xs text-slate-600">{item.label}</span>
+                          <span className="text-sm font-black" style={{ color: item.color, fontFamily: "'Space Grotesk', sans-serif" }}>
                             {item.value}
                           </span>
                         </div>
                       ))}
                     </div>
+                  </div>
+
+                  {/* Health Factor Gauge */}
+                  <div className="rounded-2xl p-5" style={cardBgBrown}>
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-1 h-3 rounded-full" style={{ background: COPPER }} />
+                      <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white">Health Factor</p>
+                    </div>
+                    <HealthFactorGauge value={healthFactor} />
+                  </div>
+
+                  {/* Risk Meter */}
+                  <div className="rounded-2xl p-5" style={cardBg}>
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-1 h-3 rounded-full" style={{ background: RUST }} />
+                      <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white">Risk Level</p>
+                    </div>
+                    <RiskMeter />
+                  </div>
+
+                  {/* Price Feed */}
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] mb-3" style={{ color: COPPER }}>
+                      Live Prices
+                    </p>
+                    <PriceFeedCard />
                   </div>
                 </div>
               </div>

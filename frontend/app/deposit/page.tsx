@@ -64,26 +64,6 @@ export default function DepositPage() {
   const canConfirm = amountNum > 0 && amountNum <= totalAvailable && !!breakdown && !loading;
 
   return (
-<<<<<<< Updated upstream
-    <div className="flex min-h-screen bg-[#0A0A0F] pt-20">
-            <main className="flex-1 w-full max-w-6xl mx-auto px-4 lg:px-8 py-10">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
-          <Link href="/dashboard">
-            <button className="w-9 h-9 rounded-xl glass flex items-center justify-center text-slate-400 hover:text-white transition-colors">
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-black text-white">Deposit Funds</h1>
-            <p className="text-sm text-slate-500">Convert crypto assets into FlowPay spendable balance</p>
-          </div>
-        </div>
-
-        <div className="max-w-lg mx-auto space-y-5">
-          {/* Current Balance */}
-          <Card className="flex items-center justify-between">
-=======
     <AuthGuard>
       <div className="flex min-h-screen bg-[#0A0A0F] pt-20">
               <main className="flex-1 w-full max-w-6xl mx-auto px-4 lg:px-8 py-10">
@@ -94,7 +74,6 @@ export default function DepositPage() {
                 <ArrowLeft className="w-4 h-4" />
               </button>
             </Link>
->>>>>>> Stashed changes
             <div>
               <h1 className="text-2xl font-black text-white">Deposit Funds</h1>
               <p className="text-sm text-slate-500">Convert crypto assets into FlowPay spendable balance</p>
