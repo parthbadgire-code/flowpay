@@ -3,11 +3,7 @@ const fs = require("fs");
 const path = require("path");
 
 const SUBSCRIPTION_ID = "109875450105937948492512243849098070632142568475445286884777686620247923872012";
-<<<<<<< HEAD
 const EXISTING_MINR = "";
-=======
-const EXISTING_MINR = ""; 
->>>>>>> parth/ultimate
 const EXISTING_ORACLE = "";
 const EXISTING_NFT = "";
 const EXISTING_CM = "";
@@ -151,12 +147,8 @@ async function main() {
     MockNFT: mockNFTAddress,
     MockUSDC: mockUSDCAddress,
     MockMATIC: mockMATICAddress,
-<<<<<<< HEAD
     MockETH: mockETHAddress,
     // RewardLottery: lotteryAddress
-=======
-    MockETH: mockETHAddress
->>>>>>> parth/ultimate
   };
 
   const contractsDir = path.join(__dirname, "..", "..", "frontend", "src", "contracts");

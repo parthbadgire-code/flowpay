@@ -13,5 +13,5 @@ export const config = getDefaultConfig({
     [sepolia.id]: http(`https://eth-sepolia.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || 'n7MXNbmaASHEe5yswprAx'}`),
     [mainnet.id]: http(),
   },
-  ssr: false, // Turned off to prevent Hydration SSR deadlocks without cookieStorage
+  ssr: true, // IMPORTANT: Must be true in Next.js 13/14 App Router to prevent WalletConnect SSR indexedDB errors
 });
