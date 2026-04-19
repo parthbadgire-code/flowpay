@@ -313,3 +313,71 @@ h1, h2, h3, .font-display {
   );
   pointer-events: none;
 }
+
+/* ─── 3D Card Depth Effects ──────────────────────────────────────────────── */
+.card-3d {
+  transform-style: preserve-3d;
+  perspective: 800px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-3d:hover {
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255,255,255,0.04);
+}
+
+/* ─── 3D Orbit Animation ─────────────────────────────────────────────────── */
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(130px) rotate(0deg); }
+  to   { transform: rotate(360deg) translateX(130px) rotate(-360deg); }
+}
+
+@keyframes orbitReverse {
+  from { transform: rotate(0deg) translateX(100px) rotate(0deg); }
+  to   { transform: rotate(-360deg) translateX(100px) rotate(360deg); }
+}
+
+.animate-orbit       { animation: orbit 12s linear infinite; }
+.animate-orbit-slow  { animation: orbit 18s linear infinite; }
+
+/* ─── 3D Pulsing Glow ────────────────────────────────────────────────────── */
+@keyframes glowPulse3d {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(184,115,51,0.3), 0 0 60px rgba(184,115,51,0.1), inset 0 0 20px rgba(255,255,255,0.05);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(184,115,51,0.6), 0 0 100px rgba(0,212,170,0.15), inset 0 0 30px rgba(255,255,255,0.1);
+  }
+}
+
+.animate-glow-3d { animation: glowPulse3d 3s ease-in-out infinite; }
+
+/* ─── 3D Floating ────────────────────────────────────────────────────────── */
+@keyframes float3d {
+  0%, 100% { transform: perspective(400px) rotateX(15deg) rotateY(-10deg) translateY(0px); }
+  33%       { transform: perspective(400px) rotateX(10deg) rotateY(5deg) translateY(-12px); }
+  66%       { transform: perspective(400px) rotateX(20deg) rotateY(-15deg) translateY(6px); }
+}
+
+.animate-float-3d { animation: float3d 8s ease-in-out infinite; }
+
+/* ─── Perspective Wrapper ─────────────────────────────────────────────────── */
+.perspective-800  { perspective: 800px; }
+.perspective-1000 { perspective: 1000px; }
+.preserve-3d      { transform-style: preserve-3d; }
+
+/* ─── Text 3D depth shadow ───────────────────────────────────────────────── */
+.text-3d {
+  text-shadow:
+    0 1px 0 rgba(200,200,200,0.3),
+    0 2px 0 rgba(150,150,150,0.2),
+    0 3px 0 rgba(100,100,100,0.15),
+    0 4px 4px rgba(0,0,0,0.5),
+    0 8px 20px rgba(0,0,0,0.6);
+}
+
+.text-3d-glow {
+  text-shadow:
+    0 0 20px rgba(184,115,51,0.5),
+    0 0 40px rgba(184,115,51,0.3),
+    0 4px 12px rgba(0,0,0,0.5);
+}
