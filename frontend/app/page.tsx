@@ -9,6 +9,7 @@ import {
   useMotionTemplate,
 } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   ArrowRight, Zap, Shield,
   ChevronRight, Sparkles, Lock, Wallet, TrendingUp,
@@ -44,7 +45,7 @@ const LIVE_LOG = [
 const RING_TOKENS = [
   { label: 'ETH', icon: '⟠', color: '#627EEA', info: 'Ethereum' },
   { label: 'USDC', icon: '$', color: '#2775CA', info: 'USD Coin' },
-  { label: '₹INR', icon: '₹', color: '#00D4AA', info: 'Rupees' },
+  { label: 'INR', icon: '₹', color: '#00D4AA', info: 'Rupees' },
   { label: 'LINK', icon: '🔗', color: '#375BD2', info: 'Chainlink Oracle' },
   { label: 'MATIC', icon: '⬡', color: '#8247E5', info: 'Polygon Network' },
   { label: 'BTC', icon: '₿', color: '#F7931A', info: 'Bitcoin' },
@@ -1203,7 +1204,12 @@ export default function LandingPage() {
               FlowPay
             </span>
           </div>
-          <p className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.2em]">© 2026 FlowPay. Non-custodial credit.</p>
+          <div className="flex flex-col items-center gap-2">
+            <p className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.2em]">© 2026 FlowPay. Non-custodial credit.</p>
+            <Link href="/terms" className="text-[10px] text-slate-500 hover:text-[#B87333] transition-colors font-bold uppercase tracking-[0.2em]">
+              Terms and Conditions
+            </Link>
+          </div>
         </div>
       </footer>
     </div>

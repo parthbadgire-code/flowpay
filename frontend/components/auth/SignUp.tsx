@@ -58,6 +58,7 @@ export function SignUp() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [agreed, setAgreed] = useState(false);
 
   const set =
     (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -69,7 +70,8 @@ export function SignUp() {
   const isValid =
     form.email.includes('@') &&
     form.password.length >= 8 &&
-    passwordsMatch;
+    passwordsMatch &&
+    agreed;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -348,6 +350,23 @@ export function SignUp() {
                   'Create Account'
                 )}
               </button>
+
+              {/* Terms Disclaimer with Checkbox */}
+              <div className="flex items-center gap-3 mb-5">
+                <input
+                  type="checkbox"
+                  id="signup-terms"
+                  checked={agreed}
+                  onChange={(e) => setAgreed(e.target.checked)}
+                  className="w-4 h-4 rounded border-slate-700 bg-black/20 text-[#00D4AA] focus:ring-[#00D4AA]/30 cursor-pointer"
+                />
+                <label htmlFor="signup-terms" className="text-[10px] text-slate-500 cursor-pointer select-none">
+                  By creating an account, I agree to the{' '}
+                  <Link href="/terms" className="text-[#00D4AA] hover:underline font-bold">
+                    Terms & Conditions
+                  </Link>
+                </label>
+              </div>
 
               <p className="text-center text-xs text-slate-500">
                 Already have an account?{' '}

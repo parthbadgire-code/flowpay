@@ -30,6 +30,12 @@ export const metadata: Metadata = {
     description: 'Your crypto. Your collateral. Your credit.',
     type: 'website',
   },
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
+  themeColor: '#00D4AA',
 };
 
 export default function RootLayout({
