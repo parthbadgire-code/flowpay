@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
-import { useAccount, useReadContract, useReadContracts, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useReadContract, useReadContracts, useWriteContract, useWaitForTransactionReceipt, usePublicClient } from 'wagmi';
 import { formatUnits, parseUnits } from 'viem';
 import { ADDRESSES } from '@/src/contracts/addresses';
 import cmArtifact from '@/src/contracts/CollateralManager.json';
@@ -53,6 +53,7 @@ function computeRiskLevel(hf: number): RiskLevel {
 
 export function CreditLineProvider({ children }: { children: React.ReactNode }) {
   const { address } = useAccount();
+  const publicClient = usePublicClient();
   const [currency, setCurrencyState] = useState<CurrencyDisplay>('USD');
   const [activeTx, setActiveTx] = useState<string | null>(null);
 
@@ -222,16 +223,15 @@ export function CreditLineProvider({ children }: { children: React.ReactNode }) 
     if (!address) throw new Error("Not connected");
     
     // Step 1: Approve mINR
-    await writeContractAsync({
+    const hash = await writeContractAsync({
       address: ADDRESSES.MockINR as `0x${string}`,
       abi: mInrArtifact.abi,
       functionName: 'approve',
       args: [ADDRESSES.CollateralManager, totalRepayRaw],
     });
 
-    // We assume a naive delay between txs for Demo simplicity rather than watching receipt here, 
-    // real PROD requires 2 distinct user-waits.
-    await new Promise(r => setTimeout(r, 6000));
+    if (publicClient) await publicClient.waitForTransactionReceipt({ hash });
+    else await new Promise(r => setTimeout(r, 8000));
     
     // Step 2: Repay
     const tx = await writeContractAsync({
@@ -242,7 +242,7 @@ export function CreditLineProvider({ children }: { children: React.ReactNode }) 
     });
     setActiveTx(tx);
     return tx;
-  }, [address, writeContractAsync]);
+  }, [address, writeContractAsync, publicClient]);
 
   const simulateBorrow = useCallback((amountUSD: number, colUSD: number): BorrowSimulation => {
     const newBorrowed = totalBorrowedUSD + amountUSD;

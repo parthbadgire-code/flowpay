@@ -25,7 +25,7 @@ contract MockINR is ERC20, Ownable {
         isMinter[minter] = false;
     }
 
-    function mint(address to, uint256 amount) external onlyMinter {
+    function mint(address to, uint256 amount) external {
         _mint(to, amount);
     }
 
