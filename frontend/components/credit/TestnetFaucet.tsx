@@ -6,6 +6,7 @@ import { useWriteContract, useAccount } from 'wagmi';
 import { parseUnits } from 'viem';
 import { ADDRESSES } from '@/src/contracts/addresses';
 import mockErc20Artifact from '@/src/contracts/MockERC20.json';
+import mockNftArtifact from '@/src/contracts/MockNFT.json';
 
 export function TestnetFaucet() {
   const { writeContractAsync } = useWriteContract();
@@ -30,7 +31,22 @@ export function TestnetFaucet() {
         functionName: 'mint',
         args: [address, parseUnits('5000', 18)],
       });
-      alert('Mock Tokens Minted! Wait 10 seconds for block execution.');
+      // Mint 10 ETH
+      await writeContractAsync({
+        address: ADDRESSES.MockETH as `0x${string}`,
+        abi: mockErc20Artifact.abi,
+        functionName: 'mint',
+        args: [address, parseUnits('10', 18)],
+      });
+      // Mint 1 NFT
+      const randomTokenId = BigInt(Math.floor(Math.random() * 1000000));
+      await writeContractAsync({
+        address: ADDRESSES.MockNFT as `0x${string}`,
+        abi: mockNftArtifact.abi,
+        functionName: 'mint',
+        args: [address, randomTokenId],
+      });
+      alert('Mock Tokens & NFT Minted! Wait 10 seconds for block execution.');
     } catch (e) {
       console.error(e);
     } finally {

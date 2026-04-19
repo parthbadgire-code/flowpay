@@ -17,6 +17,7 @@ interface CreditLineContextType {
   loans: Position[];
   walletBalanceINR: number;
   openPositionERC20: (token: string, amountRaw: bigint, creditRaw: bigint) => Promise<any>;
+  openPositionNFT: (nftContract: string, tokenIdRaw: bigint, creditRaw: bigint) => Promise<any>;
   repayPosition: (positionId: bigint, totalRepayRaw: bigint) => Promise<any>;
   setCurrency: (currency: CurrencyDisplay) => void;
   simulateBorrow: (amountUSD: number, collateralUSD: number) => BorrowSimulation;
@@ -167,6 +168,18 @@ export function CreditLineProvider({ children }: { children: React.ReactNode }) 
     return tx;
   }, [address, writeContractAsync]);
 
+  const openPositionNFT = useCallback(async (nftContract: string, tokenIdRaw: bigint, creditRaw: bigint) => {
+    if (!address) throw new Error("Not connected");
+    const tx = await writeContractAsync({
+      address: ADDRESSES.CollateralManager as `0x${string}`,
+      abi: cmArtifact.abi,
+      functionName: 'openPositionNFT',
+      args: [nftContract, tokenIdRaw, creditRaw],
+    });
+    setActiveTx(tx);
+    return tx;
+  }, [address, writeContractAsync]);
+
   const repayPosition = useCallback(async (positionId: bigint, totalRepayRaw: bigint) => {
     if (!address) throw new Error("Not connected");
     
@@ -218,9 +231,9 @@ export function CreditLineProvider({ children }: { children: React.ReactNode }) 
   const value: CreditLineContextType = useMemo(() => ({
     loans, activeLoans,
     totalCollateralUSD, totalBorrowedUSD, maxBorrowUSD, availableCreditUSD, healthFactor, isAtRisk, safeBorrowUSD,
-    walletBalanceINR, openPositionERC20, repayPosition, setCurrency: setCurrencyState, simulateBorrow, fmt, isLoading: !!activeTx, riskLevel, currency,
+    walletBalanceINR, openPositionERC20, openPositionNFT, repayPosition, setCurrency: setCurrencyState, simulateBorrow, fmt, isLoading: !!activeTx, riskLevel, currency,
     liquidationPrice, collateralRatio, prices
-  }), [loans, activeLoans, totalCollateralUSD, totalBorrowedUSD, maxBorrowUSD, availableCreditUSD, healthFactor, isAtRisk, safeBorrowUSD, walletBalanceINR, openPositionERC20, repayPosition, simulateBorrow, fmt, activeTx, riskLevel, currency, liquidationPrice, collateralRatio, prices]);
+  }), [loans, activeLoans, totalCollateralUSD, totalBorrowedUSD, maxBorrowUSD, availableCreditUSD, healthFactor, isAtRisk, safeBorrowUSD, walletBalanceINR, openPositionERC20, openPositionNFT, repayPosition, simulateBorrow, fmt, activeTx, riskLevel, currency, liquidationPrice, collateralRatio, prices]);
 
   return <CreditLineContext.Provider value={value}>{children}</CreditLineContext.Provider>;
 }

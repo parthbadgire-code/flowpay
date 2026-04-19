@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract MockNFT is ERC721, Ownable {
     constructor() ERC721("FlowPay Test NFT", "FPNFT") Ownable(msg.sender) {}
 
-    function mint(address to, uint256 tokenId) external onlyOwner {
+    function mint(address to, uint256 tokenId) external {
         _mint(to, tokenId);
     }
 }

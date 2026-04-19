@@ -24,6 +24,7 @@ module.exports = {
       accounts: [PRIVATE_KEY],
       chainId: 11155111,
       timeout: 120000,
+      gasMultiplier: 1.5,
     },
   },
   etherscan: {

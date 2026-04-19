@@ -9,26 +9,35 @@ import { ADDRESSES } from '@/src/contracts/addresses';
 import { parseUnits } from 'viem';
 import { useWriteContract, useAccount } from 'wagmi';
 import mInrArtifact from '@/src/contracts/MockINR.json'; // ERC20 standard ABI
+import mockNftArtifact from '@/src/contracts/MockNFT.json';
 
 interface OpenPositionModalProps {
   isOpen: boolean; onClose: () => void;
 }
 
 export function OpenPositionModal({ isOpen, onClose }: OpenPositionModalProps) {
-  const { openPositionERC20, currency, simulateBorrow } = useCreditLine();
+  const { openPositionERC20, openPositionNFT, currency, simulateBorrow } = useCreditLine();
   const { writeContractAsync } = useWriteContract();
   const { address } = useAccount();
 
-  const [token, setToken] = useState<'MATIC' | 'USDC'>('MATIC');
+  const [token, setToken] = useState<'MATIC' | 'USDC' | 'ETH' | 'NFT'>('MATIC');
   const [collateralAmount, setCollateralAmount] = useState('');
   const [borrowAmountUSD, setBorrowAmountUSD] = useState('');
   const [step, setStep] = useState<'form' | 'success'>('form');
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Very naive price mapping for testnet demo constraints
-  const price = token === 'MATIC' ? 0.8 : 1.0; 
-  const collateralValueUSD = parseFloat(collateralAmount || '0') * price;
-  const maxBorrowUSD = collateralValueUSD * LTV_RULES.ERC20;
+  let price = 0;
+  if (token === 'MATIC') price = 0.8;
+  else if (token === 'USDC') price = 1.0;
+  else if (token === 'ETH') price = 3000.0;
+  else if (token === 'NFT') price = 500.0;
+  
+  const collateralValueUSD = token === 'NFT' 
+    ? (collateralAmount ? price : 0)
+    : parseFloat(collateralAmount || '0') * price;
+    
+  const maxBorrowUSD = collateralValueUSD * (token === 'NFT' ? LTV_RULES.NFT : LTV_RULES.ERC20);
   
   const amtBorrowed = parseFloat(borrowAmountUSD || '0');
   const sim = simulateBorrow(amtBorrowed, collateralValueUSD);
@@ -41,23 +50,41 @@ export function OpenPositionModal({ isOpen, onClose }: OpenPositionModalProps) {
     if (!address || !collateralAmount || !borrowAmountUSD || isProcessing) return;
     setIsProcessing(true);
     try {
-      const colRaw = parseUnits(collateralAmount, 18);
       const creditRaw = parseUnits((amtBorrowed * INR_PER_USD).toFixed(18), 18); // mint mINR natively equivalent to INR value
-      const tokenAddress = token === 'MATIC' ? ADDRESSES.MockMATIC : ADDRESSES.MockUSDC;
 
-      // 1. Approve Collateral Manager for ERC20 transfer
-      await writeContractAsync({
-        address: tokenAddress as `0x${string}`,
-        abi: mInrArtifact.abi, // reuse ERC20 generic abi
-        functionName: 'approve',
-        args: [ADDRESSES.CollateralManager, colRaw],
-      });
+      if (token === 'NFT') {
+        const tokenId = BigInt(collateralAmount);
+        
+        await writeContractAsync({
+          address: ADDRESSES.MockNFT as `0x${string}`,
+          abi: mockNftArtifact.abi,
+          functionName: 'approve',
+          args: [ADDRESSES.CollateralManager, tokenId],
+        });
+        
+        await new Promise(r => setTimeout(r, 6000));
+        
+        await openPositionNFT(ADDRESSES.MockNFT, tokenId, creditRaw);
+      } else {
+        const colRaw = parseUnits(collateralAmount, 18);
+        let tokenAddress = ADDRESSES.MockUSDC;
+        if (token === 'MATIC') tokenAddress = ADDRESSES.MockMATIC;
+        if (token === 'ETH') tokenAddress = ADDRESSES.MockETH;
 
-      // Simple delay to assume generic block processing before CDP execution in sequence demo
-      await new Promise(r => setTimeout(r, 6000));
+        // 1. Approve Collateral Manager for ERC20 transfer
+        await writeContractAsync({
+          address: tokenAddress as `0x${string}`,
+          abi: mInrArtifact.abi, // reuse ERC20 generic abi
+          functionName: 'approve',
+          args: [ADDRESSES.CollateralManager, colRaw],
+        });
 
-      // 2. Open Position Atomic Action
-      await openPositionERC20(tokenAddress, colRaw, creditRaw);
+        // Simple delay to assume generic block processing before CDP execution in sequence demo
+        await new Promise(r => setTimeout(r, 6000));
+
+        // 2. Open Position Atomic Action
+        await openPositionERC20(tokenAddress, colRaw, creditRaw);
+      }
       
       setStep('success');
       setTimeout(() => { setStep('form'); setCollateralAmount(''); setBorrowAmountUSD(''); onClose(); }, 2500);
@@ -104,14 +131,14 @@ export function OpenPositionModal({ isOpen, onClose }: OpenPositionModalProps) {
               <div className="mb-4">
                  <label className="text-xs text-[#00D4AA] font-bold mb-2 flex items-center gap-2"><ArrowDownToLine className="w-3 h-3"/> Step 1: Deposit Collateral</label>
                  <div className="flex gap-2 mb-2">
-                  {(['MATIC', 'USDC'] as const).map(t => (
+                  {(['MATIC', 'USDC', 'ETH', 'NFT'] as const).map(t => (
                     <button key={t} onClick={() => setToken(t)} className="flex-1 py-2 rounded-xl text-xs font-bold transition-all"
                       style={{ background: token === t ? '#627EEA20' : 'rgba(255,255,255,0.03)', border: `1px solid ${token === t ? '#627EEA' : '#ffffff20'}`, color: token === t ? '#627EEA' : '#64748B' }}>
                       {t}
                     </button>
                   ))}
                  </div>
-                 <input type="number" value={collateralAmount} onChange={e => setCollateralAmount(e.target.value)} placeholder="0.00"
+                 <input type={token === 'NFT' ? "text" : "number"} value={collateralAmount} onChange={e => setCollateralAmount(e.target.value)} placeholder={token === 'NFT' ? "Enter Token ID" : "0.00"}
                     className="w-full rounded-2xl py-3 px-4 text-lg font-bold text-white bg-black/40 border border-white/10 focus:outline-none" />
                  {collateralValueUSD > 0 && <p className="text-xs text-slate-400 mt-1">Value: {displayCollateral}</p>}
               </div>
